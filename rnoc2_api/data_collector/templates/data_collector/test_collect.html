@@ -1,0 +1,264 @@
+{% extends "data_collector/base.html" %}
+
+{% block title %}Test Collect - Data Collector{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Test Form -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-play-circle"></i> Test Collection
+            </div>
+            <div class="card-body">
+                <form id="testCollectForm">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Select Source</label>
+                        <select id="sourceSelect" class="form-select" required>
+                            <option value="">-- Select Source --</option>
+                            {% for source in sources %}
+                            <option value="{{ source.type }}:{{ source.id }}"
+                                    data-system="{{ source.system }}"
+                                    data-vendor="{{ source.vendor }}">
+                                {{ source.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Test Date</label>
+                        <input type="date" id="testDate" class="form-control" 
+                               value="{{ today|date:'Y-m-d' }}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Test Hour (0-23)</label>
+                        <input type="number" id="testHour" class="form-control" 
+                               min="0" max="23" placeholder="Leave empty for now">
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary" id="runTestBtn">
+                            <i class="bi bi-play"></i> Run Test Collect
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Status -->
+                <div id="testStatus" class="mt-3" style="display: none;">
+                    <div class="alert alert-info">
+                        <i class="bi bi-hourglass-split"></i> <span id="statusText">Running...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Test Results -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-list-check"></i> Execution Steps</span>
+                <span id="logStatus" class="badge"></span>
+            </div>
+            <div class="card-body">
+                <div id="stepsContainer">
+                    <div class="text-center text-muted py-5">
+                        <i class="bi bi-arrow-left-circle" style="font-size: 3rem;"></i>
+                        <p class="mt-3">Select a source and click "Run Test Collect" to see results.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Preview -->
+        <div class="card mt-3" id="dataPreviewCard" style="display: none;">
+            <div class="card-header">
+                <i class="bi bi-table"></i> Data Preview
+            </div>
+            <div class="card-body">
+                <div id="dataPreviewInfo" class="mb-3"></div>
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered" id="previewTable">
+                        <thead id="previewHead"></thead>
+                        <tbody id="previewBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Logs -->
+<div class="card mt-4">
+    <div class="card-header">
+        <i class="bi bi-clock-history"></i> Recent Collection Logs
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Source</th>
+                        <th>Status</th>
+                        <th>Test Time</th>
+                        <th>Rows</th>
+                        <th>Execution</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in recent_logs %}
+                    <tr>
+                        <td>{{ log._id }}</td>
+                        <td><small>{{ log.source_name|truncatechars:40 }}</small></td>
+                        <td>
+                            <span class="badge status-{{ log.status }}">{{ log.status }}</span>
+                        </td>
+                        <td><small>{{ log.test_datetime|date:"Y-m-d H:i" }}</small></td>
+                        <td>{{ log.rows_fetched|default:"0" }}</td>
+                        <td><small>{{ log.execution_time|default:"0" }}s</small></td>
+                        <td>
+                            <a href="{% url 'collection-log-detail' log._id %}" 
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">No recent logs</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('testCollectForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const sourceValue = document.getElementById('sourceSelect').value;
+    if (!sourceValue) {
+        alert('Please select a source');
+        return;
+    }
+    
+    const [sourceType, sourceId] = sourceValue.split(':');
+    const testDate = document.getElementById('testDate').value;
+    const testHour = document.getElementById('testHour').value;
+    
+    // Show status
+    document.getElementById('testStatus').style.display = 'block';
+    document.getElementById('statusText').textContent = 'Running test collect...';
+    document.getElementById('runTestBtn').disabled = true;
+    
+    // Prepare request data
+    const data = {
+        source_type: sourceType,
+        source_id: parseInt(sourceId),
+        test_date: testDate || null,
+        test_hour: testHour ? parseInt(testHour) : null
+    };
+    
+    // Make request
+    ajaxPOST('/data-collector/api/test-collect/', data, function(result) {
+        document.getElementById('runTestBtn').disabled = false;
+        
+        if (result.success) {
+            document.getElementById('statusText').textContent = 'Test completed successfully!';
+            renderSteps(result.steps || []);
+            renderDataPreview(result);
+        } else {
+            document.getElementById('statusText').textContent = 'Test failed: ' + result.message;
+            renderSteps(result.steps || []);
+        }
+        
+        // Update log status badge
+        const statusEl = document.getElementById('logStatus');
+        statusEl.textContent = result.success ? 'success' : 'failed';
+        statusEl.className = 'badge status-' + (result.success ? 'success' : 'failed');
+    });
+});
+
+function renderSteps(steps) {
+    const container = document.getElementById('stepsContainer');
+    
+    if (!steps || steps.length === 0) {
+        container.innerHTML = '<div class="text-muted text-center">No steps recorded</div>';
+        return;
+    }
+    
+    let html = '';
+    steps.forEach(function(step) {
+        const statusClass = step.status === 'success' ? 'success' : 
+                           step.status === 'failed' ? 'failed' : 
+                           step.status === 'warning' ? 'warning' : 'running';
+        
+        html += `
+            <div class="step-card ${statusClass} p-3">
+                <div class="d-flex align-items-start">
+                    <div class="step-number ${statusClass} me-3">${step.step}</div>
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1">${step.name}</h6>
+                        <p class="mb-1 text-muted">${step.message}</p>
+                        ${step.details ? `<pre class="json-preview mb-0 mt-2" style="max-height: 100px;">${JSON.stringify(step.details, null, 2)}</pre>` : ''}
+                    </div>
+                    <span class="badge status-${statusClass}">${step.status}</span>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+function renderDataPreview(result) {
+    const card = document.getElementById('dataPreviewCard');
+    const info = document.getElementById('dataPreviewInfo');
+    const thead = document.getElementById('previewHead');
+    const tbody = document.getElementById('previewBody');
+    
+    if (!result.data || result.data.length === 0) {
+        card.style.display = 'none';
+        return;
+    }
+    
+    card.style.display = 'block';
+    
+    // Info
+    const dataInfo = result.data_info || {};
+    info.innerHTML = `
+        <div class="row">
+            <div class="col-md-3"><strong>Total Rows:</strong> ${dataInfo.total_rows || 0}</div>
+            <div class="col-md-3"><strong>Columns:</strong> ${dataInfo.columns?.length || 0}</div>
+            <div class="col-md-6"><strong>File:</strong> <code>${dataInfo.file_found || 'N/A'}</code></div>
+        </div>
+    `;
+    
+    // Table headers
+    const columns = Object.keys(result.data[0]);
+    thead.innerHTML = '<tr>' + columns.map(c => `<th>${c}</th>`).join('') + '</tr>';
+    
+    // Table body
+    tbody.innerHTML = result.data.map(row => 
+        '<tr>' + columns.map(c => `<td>${row[c] ?? ''}</td>`).join('') + '</tr>'
+    ).join('');
+}
+
+// Check URL params for pre-selection
+const params = new URLSearchParams(window.location.search);
+if (params.get('source_type') && params.get('source_id')) {
+    const value = params.get('source_type') + ':' + params.get('source_id');
+    document.getElementById('sourceSelect').value = value;
+}
+</script>
+{% endblock %}

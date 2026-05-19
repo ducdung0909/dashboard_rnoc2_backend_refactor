@@ -1,0 +1,260 @@
+{% extends "data_collector/base.html" %}
+
+{% block title %}{{ page_title }} - Data Collector{% endblock %}
+
+{% block page_actions %}
+<button class="btn btn-outline-primary" onclick="testConnection()">
+    <i class="bi bi-wifi"></i> Test Connection
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-server"></i> {{ page_title }}
+    </div>
+    <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                
+                <!-- Basic Info -->
+                <h6 class="text-muted mb-3">Basic Information</h6>
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Active</label>
+                        <select name="active" class="form-select">
+                            <option value="1" {% if source.active == "1" %}selected{% endif %}>Active</option>
+                            <option value="0" {% if source.active == "0" %}selected{% endif %}>Inactive</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Vendor</label>
+                        <input type="text" name="vendor" class="form-control" value="{{ source.vendor|default:"" }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">System</label>
+                        <select name="system" class="form-select">
+                            <option value="">-- Select --</option>
+                            <option value="2G" {% if source.system == "2G" %}selected{% endif %}>2G</option>
+                            <option value="3G" {% if source.system == "3G" %}selected{% endif %}>3G</option>
+                            <option value="4G" {% if source.system == "4G" %}selected{% endif %}>4G</option>
+                            <option value="5G" {% if source.system == "5G" %}selected{% endif %}>5G</option>
+                            <option value="VoLTE" {% if source.system == "VoLTE" %}selected{% endif %}>VoLTE</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Level</label>
+                        <select name="level" class="form-select">
+                            <option value="">-- Select --</option>
+                            <option value="BSC" {% if source.level == "BSC" %}selected{% endif %}>BSC</option>
+                            <option value="RNC" {% if source.level == "RNC" %}selected{% endif %}>RNC</option>
+                            <option value="eNB" {% if source.level == "eNB" %}selected{% endif %}>eNB</option>
+                            <option value="gNB" {% if source.level == "gNB" %}selected{% endif %}>gNB</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">OSS</label>
+                        <input type="text" name="oss" class="form-control" value="{{ source.oss|default:"" }}">
+                    </div>
+                </div>
+
+                <hr>
+                <h6 class="text-muted mb-3">Connection Settings</h6>
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Protocol</label>
+                        <select name="protocol" class="form-select">
+                            <option value="">-- Select --</option>
+                            <option value="SFTP" {% if source.protocol == "SFTP" %}selected{% endif %}>SFTP</option>
+                            <option value="FTP" {% if source.protocol == "FTP" %}selected{% endif %}>FTP</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">IP</label>
+                        <input type="text" name="ip" class="form-control" value="{{ source.ip|default:"" }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Port</label>
+                        <input type="number" name="port" class="form-control" value="{{ source.port|default:"" }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">User</label>
+                        <input type="text" name="data_user" class="form-control" value="{{ source.data_user|default:"" }}">
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Password</label>
+                        <input type="password" name="data_pass" class="form-control" value="{{ source.data_pass|default:"" }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Data Path</label>
+                        <input type="text" name="data_path" class="form-control" value="{{ source.data_path|default:"" }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Data Name</label>
+                        <input type="text" name="data_name" class="form-control" value="{{ source.data_name|default:"" }}">
+                    </div>
+                </div>
+
+                <hr>
+                <h6 class="text-muted mb-3">File Settings</h6>
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Format</label>
+                        <input type="text" name="data_format" class="form-control" value="{{ source.data_format|default:"" }}" placeholder=".xlsx">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Sheet</label>
+                        <input type="text" name="data_sheet" class="form-control" value="{{ source.data_sheet|default:"" }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Header Row</label>
+                        <input type="number" name="data_header_row" class="form-control" value="{{ source.data_header_row|default:"1" }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">File Delay (hours)</label>
+                        <input type="number" name="data_file_delay" class="form-control" value="{{ source.data_file_delay|default:"1" }}">
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <label class="form-label">KPI Delay (hours)</label>
+                        <input type="number" name="data_kpi_delay" class="form-control" value="{{ source.data_kpi_delay|default:"3" }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Datetime File Format</label>
+                        <input type="text" name="datetime_file" class="form-control" value="{{ source.datetime_file|default:"%Y_%m_%d-%H" }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Datetime KPI Format</label>
+                        <input type="text" name="datetime_kpi" class="form-control" value="{{ source.datetime_kpi|default:"%m.%d.%Y %H:00:00" }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Data Table</label>
+                        <input type="text" name="data_table" class="form-control" value="{{ source.data_table|default:"" }}">
+                    </div>
+                </div>
+
+                <hr>
+                <h6 class="text-muted mb-3">Header Mapping (JSON)</h6>
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="mb-2">
+                            <small class="text-muted">Map original column names to database field names.</small>
+                        </div>
+                        <textarea id="data_header_name" name="data_header_name" 
+                                  class="form-control font-monospace" rows="6"
+                                  placeholder='{"Original_Column_Name": ["kpi", "new_column_name"]}'>{{ source.data_header_name_str }}</textarea>
+                        <div class="mt-2">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="formatJSON()">
+                                <i class="bi bi-braces"></i> Format JSON
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="validateJSON()">
+                                <i class="bi bi-check-lg"></i> Validate JSON
+                            </button>
+                        </div>
+                        <div id="jsonStatus" class="mt-2"></div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Save
+                    </button>
+                    <a href="{% url 'source-list' %}" class="btn btn-secondary">
+                        <i class="bi bi-x-lg"></i> Cancel
+                    </a>
+                </div>
+            </form>
+    </div>
+</div>
+
+<!-- Test Connection Modal -->
+<div class="modal fade" id="testModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-wifi"></i> Test Connection Result</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="testResult">
+                <div class="text-center">
+                    <div class="spinner-border" role="status"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function formatJSON() {
+        const textarea = document.getElementById('data_header_name');
+        try {
+            const obj = JSON.parse(textarea.value);
+            textarea.value = JSON.stringify(obj, null, 2);
+            showStatus('JSON formatted successfully!', 'success');
+        } catch (e) {
+            showStatus('Invalid JSON: ' + e.message, 'danger');
+        }
+    }
+
+    function validateJSON() {
+        const textarea = document.getElementById('data_header_name');
+        try {
+            const obj = JSON.parse(textarea.value);
+            showStatus('Valid JSON with ' + Object.keys(obj).length + ' mappings', 'success');
+        } catch (e) {
+            showStatus('Invalid JSON: ' + e.message, 'danger');
+        }
+    }
+
+    function showStatus(message, type) {
+        const status = document.getElementById('jsonStatus');
+        status.innerHTML = '<div class="alert alert-' + type + ' py-1">' + message + '</div>';
+        setTimeout(() => status.innerHTML = '', 3000);
+    }
+
+    function testConnection() {
+        const form = document.getElementById('sourceForm');
+        const formData = new FormData(form);
+        
+        // Get source_id if editing
+        const sourceId = form.querySelector('[name="_id"]')?.value || 
+                        window.location.pathname.split('/').filter(Boolean).pop();
+        
+        const modal = new bootstrap.Modal(document.getElementById('testModal'));
+        modal.show();
+        
+        const result = document.getElementById('testResult');
+        result.innerHTML = '<div class="text-center"><div class="spinner-border"></div><p>Testing...</p></div>';
+        
+        ajaxPOST('/data-collector/api/test-connection/', {
+            source_type: 'source',
+            source_id: sourceId
+        }, function(data) {
+            if (data.success) {
+                result.innerHTML = `
+                    <div class="alert alert-success">
+                        <i class="bi bi-check-circle"></i> ${data.message}
+                    </div>
+                    <pre class="json-preview">${JSON.stringify(data.details, null, 2)}</pre>
+                `;
+            } else {
+                result.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-x-circle"></i> ${data.message}
+                    </div>
+                `;
+            }
+        });
+    }
+</script>
+{% endblock %}

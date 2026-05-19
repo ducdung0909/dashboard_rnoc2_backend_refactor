@@ -1,0 +1,110 @@
+{% extends "data_collector/base.html" %}
+
+{% block title %}Collection Logs - Data Collector{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'test-collect' %}" class="btn btn-primary">
+    <i class="bi bi-plus-lg"></i> New Test
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-journal-text"></i> Collection Logs
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover data-table">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Source</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Test Date</th>
+                        <th>Rows</th>
+                        <th>Time</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in page_obj %}
+                    <tr>
+                        <td>{{ log._id }}</td>
+                        <td>
+                            <small>{{ log.source_name|truncatechars:40 }}</small>
+                        </td>
+                        <td>
+                            {% if log.source_type == "source" %}
+                            <span class="badge bg-secondary">Batch</span>
+                            {% else %}
+                            <span class="badge bg-warning text-dark">Realtime</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge status-{{ log.status }}">{{ log.status }}</span>
+                        </td>
+                        <td>
+                            <small>{{ log.test_datetime|date:"Y-m-d H:i" }}</small>
+                        </td>
+                        <td>
+                            <small>{{ log.rows_fetched|default:"0" }} / {{ log.rows_written|default:"0" }}</small>
+                        </td>
+                        <td>
+                            <small>{{ log.execution_time|default:"0" }}s</small>
+                        </td>
+                        <td>
+                            <a href="{% url 'collection-log-detail' log._id %}" 
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                            <p class="mt-2">No collection logs yet.</p>
+                            <a href="{% url 'test-collect' %}" class="btn btn-primary btn-sm">
+                                Run Test Collect
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if page_obj.has_other_pages %}
+        <nav>
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1">First</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                </li>
+                {% endif %}
+                
+                <li class="page-item active">
+                    <span class="page-link">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
+                </li>
+                
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

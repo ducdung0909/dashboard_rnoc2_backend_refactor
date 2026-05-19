@@ -1,0 +1,242 @@
+{% extends "data_collector/base.html" %}
+
+{% block title %}Export/Import - Data Collector{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Export Section -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-download"></i> Export Data
+            </div>
+            <div class="card-body">
+                <form id="exportForm">
+                    <div class="mb-3">
+                        <label class="form-label">Select Table to Export</label>
+                        <select id="exportModel" class="form-select" required>
+                            <option value="">-- Select --</option>
+                            {% for value, label in export_models %}
+                            <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Format</label>
+                        <select id="exportFormat" class="form-select">
+                            <option value="json">JSON</option>
+                            <option value="csv">CSV</option>
+                        </select>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-download"></i> Export
+                        </button>
+                    </div>
+                </form>
+
+                <div id="exportResult" class="mt-3" style="display: none;">
+                    <div class="alert alert-info">
+                        <span id="exportMessage"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Section -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-upload"></i> Import Data
+            </div>
+            <div class="card-body">
+                <form id="importForm">
+                    <div class="mb-3">
+                        <label class="form-label">Select Table to Import</label>
+                        <select id="importModel" class="form-select" required>
+                            <option value="">-- Select --</option>
+                            {% for value, label in import_models %}
+                            <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Import Mode</label>
+                        <select id="importMode" class="form-select">
+                            <option value="upsert">Upsert (Update if exists, Insert if new)</option>
+                            <option value="insert">Insert Only (Skip existing)</option>
+                            <option value="update">Update Only (Skip new)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">JSON Data</label>
+                        <textarea id="importData" class="form-control font-monospace" rows="10"
+                                  placeholder='[{"field": "value"}, ...]'></textarea>
+                        <small class="text-muted">Paste JSON array here or upload file below.</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Or Upload JSON File</label>
+                        <input type="file" id="importFile" class="form-control" accept=".json">
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-upload"></i> Import
+                        </button>
+                    </div>
+                </form>
+
+                <div id="importResult" class="mt-3" style="display: none;">
+                    <div class="alert" id="importAlert">
+                        <span id="importMessage"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Imports -->
+<div class="card mt-4">
+    <div class="card-header">
+        <i class="bi bi-clock-history"></i> Recent Collection Logs
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Source</th>
+                        <th>Status</th>
+                        <th>Rows Fetched</th>
+                        <th>Rows Written</th>
+                        <th>Time</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in recent_logs %}
+                    <tr>
+                        <td>{{ log._id }}</td>
+                        <td><small>{{ log.source_name|truncatechars:50 }}</small></td>
+                        <td>
+                            <span class="badge status-{{ log.status }}">{{ log.status }}</span>
+                        </td>
+                        <td>{{ log.rows_fetched|default:"0" }}</td>
+                        <td>{{ log.rows_written|default:"0" }}</td>
+                        <td><small>{{ log.created_time|date:"Y-m-d H:i" }}</small></td>
+                        <td>
+                            <a href="{% url 'collection-log-detail' log._id %}" 
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">No logs yet</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Export
+document.getElementById('exportForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const model = document.getElementById('exportModel').value;
+    const format = document.getElementById('exportFormat').value;
+    
+    if (!model) {
+        alert('Please select a table');
+        return;
+    }
+    
+    // Direct download
+    window.location.href = '/data-collector/api/export/' + model + '/?format=' + format;
+});
+
+// Import file upload
+document.getElementById('importFile').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            document.getElementById('importData').value = JSON.stringify(data, null, 2);
+        } catch (err) {
+            alert('Invalid JSON file: ' + err.message);
+        }
+    };
+    reader.readAsText(file);
+});
+
+// Import
+document.getElementById('importForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const model = document.getElementById('importModel').value;
+    const mode = document.getElementById('importMode').value;
+    const dataStr = document.getElementById('importData').value;
+    
+    if (!model) {
+        alert('Please select a table');
+        return;
+    }
+    
+    let data;
+    try {
+        data = JSON.parse(dataStr);
+    } catch (err) {
+        alert('Invalid JSON: ' + err.message);
+        return;
+    }
+    
+    if (!Array.isArray(data)) {
+        alert('Data must be a JSON array');
+        return;
+    }
+    
+    ajaxPOST('/data-collector/api/import/' + model + '/', {
+        data: data,
+        mode: mode
+    }, function(result) {
+        const resultDiv = document.getElementById('importResult');
+        const alertDiv = document.getElementById('importAlert');
+        const msgSpan = document.getElementById('importMessage');
+        
+        resultDiv.style.display = 'block';
+        
+        if (result.success) {
+            alertDiv.className = 'alert alert-success';
+            msgSpan.innerHTML = `
+                <strong>Import completed!</strong><br>
+                Inserted: ${result.imported} | Updated: ${result.updated}
+                ${result.errors?.length ? '<br>Errors: ' + result.errors.length : ''}
+            `;
+        } else {
+            alertDiv.className = 'alert alert-danger';
+            msgSpan.innerHTML = `
+                <strong>Import failed!</strong><br>
+                ${result.error || JSON.stringify(result.errors)}
+            `;
+        }
+    });
+});
+</script>
+{% endblock %}

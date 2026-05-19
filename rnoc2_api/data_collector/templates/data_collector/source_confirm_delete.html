@@ -1,0 +1,27 @@
+{% extends "data_collector/base.html" %}
+
+{% block title %}Delete Source - Data Collector{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-danger text-white">
+        <i class="bi bi-exclamation-triangle"></i> Confirm Delete
+    </div>
+    <div class="card-body">
+        <p>Are you sure you want to delete the source: <strong>{{ object }}</strong>?</p>
+        <p class="text-muted">This action cannot be undone.</p>
+        
+        <form method="post">
+            {% csrf_token %}
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-trash"></i> Delete
+                </button>
+                <a href="{% url 'source-list' %}" class="btn btn-secondary">
+                    <i class="bi bi-x-lg"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

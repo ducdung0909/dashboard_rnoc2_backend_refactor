@@ -1,0 +1,138 @@
+{% extends "data_collector/base.html" %}
+
+{% block title %}{{ page_title|default:"Realtime Source" }} - Data Collector{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-lightning"></i> {{ page_title|default:"Realtime Source" }}
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label class="form-label">Active</label>
+                    <select name="active" class="form-select">
+                        <option value="1" {% if source.active %}selected{% endif %}>Active</option>
+                        <option value="0" {% if not source.active %}selected{% endif %}>Inactive</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Vendor</label>
+                    <input type="text" name="vendor" class="form-control" value="{{ source.vendor|default:"" }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">System</label>
+                    <select name="system" class="form-select">
+                        <option value="">-- Select --</option>
+                        <option value="2G" {% if source.system == "2G" %}selected{% endif %}>2G</option>
+                        <option value="3G" {% if source.system == "3G" %}selected{% endif %}>3G</option>
+                        <option value="4G" {% if source.system == "4G" %}selected{% endif %}>4G</option>
+                        <option value="5G" {% if source.system == "5G" %}selected{% endif %}>5G</option>
+                        <option value="VoLTE" {% if source.system == "VoLTE" %}selected{% endif %}>VoLTE</option>
+                    </select>
+                </div>
+            </div>
+
+            <hr>
+            <h6 class="text-muted mb-3">Connection</h6>
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <label class="form-label">Protocol</label>
+                    <select name="protocol" class="form-select">
+                        <option value="">-- Select --</option>
+                        <option value="SFTP" {% if source.protocol == "SFTP" %}selected{% endif %}>SFTP</option>
+                        <option value="FTP" {% if source.protocol == "FTP" %}selected{% endif %}>FTP</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">IP</label>
+                    <input type="text" name="ip" class="form-control" value="{{ source.ip|default:"" }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Port</label>
+                    <input type="number" name="port" class="form-control" value="{{ source.port|default:"" }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Level</label>
+                    <input type="text" name="level" class="form-control" value="{{ source.level|default:"" }}">
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label class="form-label">User</label>
+                    <input type="text" name="data_user" class="form-control" value="{{ source.data_user|default:"" }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="data_pass" class="form-control" value="{{ source.data_pass|default:"" }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Cycle (minutes)</label>
+                    <select name="cycle_minutes" class="form-select">
+                        <option value="15" {% if source.cycle_minutes == 15 %}selected{% endif %}>15 minutes</option>
+                        <option value="30" {% if source.cycle_minutes == 30 %}selected{% endif %}>30 minutes</option>
+                        <option value="60" {% if source.cycle_minutes == 60 or not source.cycle_minutes %}selected{% endif %}>60 minutes</option>
+                    </select>
+                </div>
+            </div>
+
+            <hr>
+            <h6 class="text-muted mb-3">File Settings</h6>
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label class="form-label">Data Path</label>
+                    <input type="text" name="data_path" class="form-control" value="{{ source.data_path|default:"" }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Data Name</label>
+                    <input type="text" name="data_name" class="form-control" value="{{ source.data_name|default:"" }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Datetime File Format</label>
+                    <input type="text" name="datetime_file" class="form-control" value="{{ source.datetime_file|default:"%Y%m%d%H%M" }}">
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <label class="form-label">Format</label>
+                    <input type="text" name="data_format" class="form-control" value="{{ source.data_format|default:"" }}" placeholder=".xlsx">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Sheet</label>
+                    <input type="text" name="data_sheet" class="form-control" value="{{ source.data_sheet|default:"" }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Header Row</label>
+                    <input type="number" name="data_header_row" class="form-control" value="{{ source.data_header_row|default:"0" }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Skip Rows</label>
+                    <input type="number" name="data_skiprows" class="form-control" value="{{ source.data_skiprows|default:"0" }}">
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label class="form-label">Header Mapping (JSON)</label>
+                    <textarea name="data_header_name" class="form-control font-monospace" rows="4"
+                              placeholder='{"Original_Col": "new_col_name"}'>{{ source.data_header_name|default:"" }}</textarea>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Save
+                </button>
+                <a href="{% url 'sourcerealtime-list' %}" class="btn btn-secondary">
+                    <i class="bi bi-x-lg"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

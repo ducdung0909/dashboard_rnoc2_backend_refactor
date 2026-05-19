@@ -1,0 +1,103 @@
+{% extends "data_collector/base.html" %}
+
+{% block title %}Realtime Sources - Data Collector{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'sourcerealtime-add' %}" class="btn btn-primary">
+    <i class="bi bi-plus-lg"></i> Add Realtime Source
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <span><i class="bi bi-lightning"></i> Realtime Sources ({{ source_count }})</span>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover data-table">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Active</th>
+                        <th>Vendor</th>
+                        <th>System</th>
+                        <th>IP</th>
+                        <th>Port</th>
+                        <th>Cycle (min)</th>
+                        <th>Data Name</th>
+                        <th>Last Fetch</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for source in sources %}
+                    <tr>
+                        <td>{{ source._id }}</td>
+                        <td>
+                            {% if source.active %}
+                            <span class="badge bg-success">Active</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ source.vendor|default:"-" }}</td>
+                        <td><span class="badge bg-info">{{ source.system|default:"-" }}</span></td>
+                        <td><code>{{ source.ip|default:"-" }}</code></td>
+                        <td>{{ source.port|default:"-" }}</td>
+                        <td>
+                            <span class="badge bg-warning text-dark">{{ source.cycle_minutes|default:"60" }}</span>
+                        </td>
+                        <td>{{ source.data_name|default:"-" }}</td>
+                        <td>
+                            {% if source.last_fetch_time %}
+                            <small>{{ source.last_fetch_time|date:"Y-m-d H:i" }}</small>
+                            {% else %}
+                            <small class="text-muted">Never</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-primary" 
+                                        onclick="testConnection('source_realtime', {{ source._id }})"
+                                        title="Test">
+                                    <i class="bi bi-wifi"></i>
+                                </button>
+                                <a href="{% url 'sourcerealtime-edit' source._id %}" 
+                                   class="btn btn-outline-secondary" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="{% url 'test-collect' %}?source_type=source_realtime&source_id={{ source._id }}" 
+                                   class="btn btn-outline-success" title="Test Collect">
+                                    <i class="bi bi-play"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="10" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                            <p class="mt-2">No realtime sources found.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function testConnection(sourceType, sourceId) {
+    ajaxPOST('/data-collector/api/test-connection/', {
+        source_type: sourceType,
+        source_id: sourceId
+    }, function(result) {
+        alert(result.message);
+    });
+}
+</script>
+{% endblock %}
