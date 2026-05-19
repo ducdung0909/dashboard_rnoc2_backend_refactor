@@ -34,8 +34,8 @@
                 <div class="col-md-3">
                     <label class="form-label">Active</label>
                     <select name="active" class="form-select">
-                        <option value="1" {% if source.active == True or source.active == "1" %}selected{% endif %}>Active</option>
-                        <option value="0" {% if source.active == False or source.active == "0" %}selected{% endif %}>Inactive</option>
+                        <option value="1" {% if source.active %}selected{% endif %}>Active</option>
+                        <option value="0" {% if not source.active %}selected{% endif %}>Inactive</option>
                     </select>
                 </div>
                 <div class="col-md-3">
@@ -73,7 +73,7 @@
                 <div class="col-md-4">
                     <label class="form-label">Data Collection Cycle *</label>
                     <select name="cycle_minutes" class="form-select">
-                        <option value="" {% if not source.cycle_minutes %}selected{% endif %>>Batch (60min) - Hourly</option>
+                        <option value="" {% if not source.cycle_minutes %}selected{% endif %}>Batch (60min) - Hourly</option>
                         <option value="15" {% if source.cycle_minutes == 15 %}selected{% endif %}>15 minutes - Realtime</option>
                         <option value="30" {% if source.cycle_minutes == 30 %}selected{% endif %}>30 minutes - Realtime</option>
                         <option value="60" {% if source.cycle_minutes == 60 %}selected{% endif %}>60 minutes - Realtime</option>
@@ -225,9 +225,9 @@
 {% block extra_js %}
 <script>
     function formatJSON() {
-        const textarea = document.getElementById('data_header_name');
+        var textarea = document.getElementById('data_header_name');
         try {
-            const obj = JSON.parse(textarea.value);
+            var obj = JSON.parse(textarea.value);
             textarea.value = JSON.stringify(obj, null, 2);
             showStatus('JSON formatted successfully!', 'success');
         } catch (e) {
@@ -236,9 +236,9 @@
     }
 
     function validateJSON() {
-        const textarea = document.getElementById('data_header_name');
+        var textarea = document.getElementById('data_header_name');
         try {
-            const obj = JSON.parse(textarea.value);
+            var obj = JSON.parse(textarea.value);
             showStatus('Valid JSON with ' + Object.keys(obj).length + ' mappings', 'success');
         } catch (e) {
             showStatus('Invalid JSON: ' + e.message, 'danger');
@@ -246,46 +246,34 @@
     }
 
     function showStatus(message, type) {
-        const status = document.getElementById('jsonStatus');
+        var status = document.getElementById('jsonStatus');
         status.innerHTML = '<div class="alert alert-' + type + ' py-1">' + message + '</div>';
-        setTimeout(() => status.innerHTML = '', 3000);
+        setTimeout(function() { status.innerHTML = ''; }, 3000);
     }
 
     function testConnection() {
-        const form = document.getElementById('sourceForm');
-        
-        // Get source_id if editing
-        const sourceIdInput = form.querySelector('[name="_id"]');
-        const sourceId = sourceIdInput ? sourceIdInput.value : 
-                        window.location.pathname.split('/').filter(Boolean).pop();
+        var form = document.getElementById('sourceForm');
+        var pathParts = window.location.pathname.split('/').filter(Boolean);
+        var sourceId = pathParts[pathParts.length - 1];
         
         if (!sourceId || sourceId === 'add') {
             alert('Please save the source first before testing connection.');
             return;
         }
         
-        const modal = new bootstrap.Modal(document.getElementById('testModal'));
+        var modal = new bootstrap.Modal(document.getElementById('testModal'));
         modal.show();
         
-        const result = document.getElementById('testResult');
+        var result = document.getElementById('testResult');
         result.innerHTML = '<div class="text-center"><div class="spinner-border"></div><p>Testing...</p></div>';
         
         ajaxPOST('/data-collector/api/test-connection/', {
             source_id: parseInt(sourceId)
         }, function(data) {
             if (data.success) {
-                result.innerHTML = `
-                    <div class="alert alert-success">
-                        <i class="bi bi-check-circle"></i> ${data.message}
-                    </div>
-                    <pre class="json-preview">${JSON.stringify(data.details, null, 2)}</pre>
-                `;
+                result.innerHTML = '<div class="alert alert-success"><i class="bi bi-check-circle"></i> ' + data.message + '</div><pre class="json-preview">' + JSON.stringify(data.details, null, 2) + '</pre>';
             } else {
-                result.innerHTML = `
-                    <div class="alert alert-danger">
-                        <i class="bi bi-x-circle"></i> ${data.message}
-                    </div>
-                `;
+                result.innerHTML = '<div class="alert alert-danger"><i class="bi bi-x-circle"></i> ' + data.message + '</div>';
             }
         });
     }

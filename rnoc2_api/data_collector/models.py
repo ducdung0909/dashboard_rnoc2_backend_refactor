@@ -51,9 +51,7 @@ class DataSource(models.Model):
         null=True, blank=True,
         help_text="Tên hiển thị cho source"
     )
-    active = models.CharField(
-        max_length=10, default="1", null=True, blank=True
-    )
+    active = models.BooleanField(default=True)
     vendor = models.CharField(max_length=255, null=True, blank=True)
     system = models.CharField(
         max_length=10, choices=SYSTEM_CHOICES, null=True, blank=True
@@ -98,7 +96,6 @@ class DataSource(models.Model):
         help_text="Chu kỳ thu thập: None=Batch(60min), 15/30/60=Realtime"
     )
 
-    active = models.BooleanField(default=True)
     last_fetch_time = models.DateTimeField(null=True, blank=True)
     last_file_name = models.CharField(max_length=255, null=True, blank=True)
 
