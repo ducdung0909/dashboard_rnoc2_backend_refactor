@@ -1,0 +1,32 @@
+---
+description: Tiêu chuẩn code và ngôn ngữ cho project
+alwaysApply: true
+---
+
+# Quy Tắc Ngôn Ngữ & Sử Dụng Skill
+
+## Ngôn Ngữ Giao Tiếp
+
+- Luôn suy nghĩ và trả lời bằng **tiếng Việt**
+- Sử dụng tiếng Việt cho tất cả các bình luận, mô tả, và hướng dẫn
+
+## Sử Dụng Skill Bắt Buộc
+
+Luôn đọc và tuân thủ các skill sau khi làm việc với code:
+
+1. **flow-orchestrator**: Sử dụng khi cần điều phối workflow, xử lý task phức tạp
+2. **system-architect**: Sử dụng khi cần thiết kế kiến trúc hệ thống
+3. **python-code-standards**: Áp dụng khi viết hoặc review Python code liên quan đến:
+   - Exception handling, error propagation
+   - Type hints, dataclass, Pydantic models
+   - Logging, observability, tracing
+   - Secrets management, input validation
+   - API authentication
+4. **git-commit-summary**: Tạo commit message ngắn gọn sau khi tạo xong code mới
+
+## Thứ Tự Áp Dụng
+
+1. Đọc `flow-orchestrator` trước khi bắt đầu task lớn
+2. Sử dụng `system-architect` cho các quyết định thiết kế
+3. Áp dụng `python-code-standards` khi implement từng service
+4. Sau khi tạo xong code mới → dùng `git-commit-summary` để tạo commit message

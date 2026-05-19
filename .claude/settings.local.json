@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c ' *)",
+      "Bash(Get-ChildItem -Path \"d:\\\\Code\\\\Github\\\\precheck_ran_prod\" -Recurse -Directory)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(rtk git *)",
+      "Bash(python scripts/test_ems_zte_reset.py --help)"
+    ]
+  }
+}
