@@ -1,215 +1,270 @@
 {% load static %}
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{{ page_title|default:"Data Collector" }}{% endblock %} - NOC2 Dashboard</title>
-    
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      {% block title %}{{ page_title|default:"Data Collector" }}{% endblock %} -
+      NOC2 Dashboard
+    </title>
+
     <!-- Bootstrap 5 CSS -->
-    <link href="{% static 'data_collector/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link
+      href="{% static 'data_collector/css/bootstrap.min.css' %}"
+      rel="stylesheet"
+    />
     <!-- Bootstrap Icons -->
-    <link href="{% static 'data_collector/css/bootstrap-icons.min.css' %}" rel="stylesheet">
+    <link
+      href="{% static 'data_collector/css/bootstrap-icons.min.css' %}"
+      rel="stylesheet"
+    />
     <!-- DataTables CSS -->
-    <link href="{% static 'data_collector/css/dataTables.bootstrap5.min.css' %}" rel="stylesheet">
+    <link
+      href="{% static 'data_collector/css/dataTables.bootstrap5.min.css' %}"
+      rel="stylesheet"
+    />
     <!-- Custom CSS -->
     <style>
-        :root {
-            --sidebar-width: 250px;
-        }
-        body {
-            font-size: 14px;
-        }
+      :root {
+        --sidebar-width: 250px;
+      }
+      body {
+        font-size: 14px;
+      }
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: var(--sidebar-width);
+        background: #2c3e50;
+        color: #ecf0f1;
+        padding-top: 20px;
+        overflow-y: auto;
+        z-index: 1000;
+      }
+      .sidebar .nav-link {
+        color: #bdc3c7;
+        padding: 12px 20px;
+        border-radius: 0;
+        transition: all 0.3s;
+      }
+      .sidebar .nav-link:hover {
+        background: #34495e;
+        color: #fff;
+      }
+      .sidebar .nav-link.active {
+        background: #3498db;
+        color: #fff;
+      }
+      .sidebar .nav-link i {
+        width: 24px;
+      }
+      .sidebar-brand {
+        font-size: 1.3rem;
+        font-weight: bold;
+        padding: 15px 20px;
+        border-bottom: 1px solid #34495e;
+        margin-bottom: 20px;
+      }
+      .main-content {
+        margin-left: var(--sidebar-width);
+        padding: 20px;
+        min-height: 100vh;
+        background: #f8f9fa;
+      }
+      .page-header {
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+      .card {
+        border: none;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        border-radius: 8px;
+      }
+      .card-header {
+        background: #fff;
+        border-bottom: 2px solid #e9ecef;
+        font-weight: 600;
+      }
+      .table-responsive {
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .status-badge {
+        font-size: 12px;
+        padding: 4px 8px;
+      }
+      .status-success {
+        background: #28a745;
+      }
+      .status-failed {
+        background: #dc3545;
+      }
+      .status-running {
+        background: #ffc107;
+        color: #000;
+      }
+      .status-warning {
+        background: #fd7e14;
+      }
+      .status-pending {
+        background: #6c757d;
+      }
+      .json-preview {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        padding: 15px;
+        font-family: "Courier New", monospace;
+        font-size: 12px;
+        max-height: 300px;
+        overflow-y: auto;
+      }
+      .step-card {
+        border-left: 4px solid #3498db;
+        margin-bottom: 10px;
+        transition: all 0.3s;
+      }
+      .step-card.success {
+        border-left-color: #28a745;
+      }
+      .step-card.failed {
+        border-left-color: #dc3545;
+      }
+      .step-card.warning {
+        border-left-color: #ffc107;
+      }
+      .step-card.running {
+        border-left-color: #3498db;
+      }
+      .step-number {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: #3498db;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+      }
+      .step-number.success {
+        background: #28a745;
+      }
+      .step-number.failed {
+        background: #dc3545;
+      }
+      .step-number.warning {
+        background: #ffc107;
+        color: #000;
+      }
+      @media (max-width: 768px) {
         .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100vh;
-            width: var(--sidebar-width);
-            background: #2c3e50;
-            color: #ecf0f1;
-            padding-top: 20px;
-            overflow-y: auto;
-            z-index: 1000;
-        }
-        .sidebar .nav-link {
-            color: #bdc3c7;
-            padding: 12px 20px;
-            border-radius: 0;
-            transition: all 0.3s;
-        }
-        .sidebar .nav-link:hover {
-            background: #34495e;
-            color: #fff;
-        }
-        .sidebar .nav-link.active {
-            background: #3498db;
-            color: #fff;
-        }
-        .sidebar .nav-link i {
-            width: 24px;
-        }
-        .sidebar-brand {
-            font-size: 1.3rem;
-            font-weight: bold;
-            padding: 15px 20px;
-            border-bottom: 1px solid #34495e;
-            margin-bottom: 20px;
+          width: 100%;
+          height: auto;
+          position: relative;
         }
         .main-content {
-            margin-left: var(--sidebar-width);
-            padding: 20px;
-            min-height: 100vh;
-            background: #f8f9fa;
+          margin-left: 0;
         }
-        .page-header {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        .card {
-            border: none;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            border-radius: 8px;
-        }
-        .card-header {
-            background: #fff;
-            border-bottom: 2px solid #e9ecef;
-            font-weight: 600;
-        }
-        .table-responsive {
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        .status-badge {
-            font-size: 12px;
-            padding: 4px 8px;
-        }
-        .status-success { background: #28a745; }
-        .status-failed { background: #dc3545; }
-        .status-running { background: #ffc107; color: #000; }
-        .status-warning { background: #fd7e14; }
-        .status-pending { background: #6c757d; }
-        .json-preview {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 4px;
-            padding: 15px;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        .step-card {
-            border-left: 4px solid #3498db;
-            margin-bottom: 10px;
-            transition: all 0.3s;
-        }
-        .step-card.success { border-left-color: #28a745; }
-        .step-card.failed { border-left-color: #dc3545; }
-        .step-card.warning { border-left-color: #ffc107; }
-        .step-card.running { border-left-color: #3498db; }
-        .step-number {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background: #3498db;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-        }
-        .step-number.success { background: #28a745; }
-        .step-number.failed { background: #dc3545; }
-        .step-number.warning { background: #ffc107; color: #000; }
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-                height: auto;
-                position: relative;
-            }
-            .main-content {
-                margin-left: 0;
-            }
-        }
+      }
     </style>
     {% block extra_css %}{% endblock %}
-</head>
-<body>
+  </head>
+  <body>
     <!-- Sidebar -->
     <nav class="sidebar">
-        <div class="sidebar-brand">
-            <i class="bi bi-database"></i> Data Collector
-        </div>
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'datasource-list' or request.resolver_match.url_name == 'source-list' %}active{% endif %}" 
-                   href="{% url 'datasource-list' %}">
-                    <i class="bi bi-server"></i> Data Sources
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'threshold-list' %}active{% endif %}" 
-                   href="{% url 'threshold-list' %}">
-                    <i class="bi bi-sliders"></i> Thresholds
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'test-collect' %}active{% endif %}" 
-                   href="{% url 'test-collect' %}">
-                    <i class="bi bi-play-circle"></i> Test Collect
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'export-import' %}active{% endif %}" 
-                   href="{% url 'export-import' %}">
-                    <i class="bi bi-arrow-down-up"></i> Export/Import
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'collection-log-list' %}active{% endif %}" 
-                   href="{% url 'collection-log-list' %}">
-                    <i class="bi bi-journal-text"></i> Collection Logs
-                </a>
-            </li>
-            <li class="nav-item mt-3">
-                <a class="nav-link" href="/admin/" target="_blank">
-                    <i class="bi bi-gear"></i> Django Admin
-                </a>
-            </li>
-        </ul>
+      <div class="sidebar-brand">
+        <i class="bi bi-database"></i> Data Collector
+      </div>
+      <ul class="nav flex-column">
+        <li class="nav-item">
+          <a
+            class="nav-link {% if request.resolver_match.url_name == 'datasource-list' or request.resolver_match.url_name == 'source-list' %}active{% endif %}"
+            href="{% url 'datasource-list' %}"
+          >
+            <i class="bi bi-server"></i> Data Sources
+          </a>
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link {% if request.resolver_match.url_name == 'threshold-list' %}active{% endif %}"
+            href="{% url 'threshold-list' %}"
+          >
+            <i class="bi bi-sliders"></i> Thresholds
+          </a>
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link {% if request.resolver_match.url_name == 'test-collect' %}active{% endif %}"
+            href="{% url 'test-collect' %}"
+          >
+            <i class="bi bi-play-circle"></i> Test Collect
+          </a>
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link {% if request.resolver_match.url_name == 'export-import' %}active{% endif %}"
+            href="{% url 'export-import' %}"
+          >
+            <i class="bi bi-arrow-down-up"></i> Export/Import
+          </a>
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link {% if request.resolver_match.url_name == 'collection-log-list' %}active{% endif %}"
+            href="{% url 'collection-log-list' %}"
+          >
+            <i class="bi bi-journal-text"></i> Collection Logs
+          </a>
+        </li>
+        <li class="nav-item mt-3">
+          <a class="nav-link" href="/admin/" target="_blank">
+            <i class="bi bi-gear"></i> Django Admin
+          </a>
+        </li>
+      </ul>
     </nav>
 
     <!-- Main Content -->
     <main class="main-content">
-        <!-- Page Header -->
-        <div class="page-header d-flex justify-content-between align-items-center">
-            <div>
-                <h4 class="mb-0">{{ page_title|default:"Dashboard" }}</h4>
-                <small class="text-muted">NOC2 Data Collector</small>
-            </div>
-            <div>
-                {% block page_actions %}{% endblock %}
-            </div>
+      <!-- Page Header -->
+      <div
+        class="page-header d-flex justify-content-between align-items-center"
+      >
+        <div>
+          <h4 class="mb-0">{{ page_title|default:"Dashboard" }}</h4>
+          <small class="text-muted">NOC2 Data Collector</small>
         </div>
+        <div>{% block page_actions %}{% endblock %}</div>
+      </div>
 
-        <!-- Flash Messages -->
-        {% if messages %}
-        <div class="messages mb-3">
-            {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-            {% endfor %}
+      <!-- Flash Messages -->
+      {% if messages %}
+      <div class="messages mb-3">
+        {% for message in messages %}
+        <div
+          class="alert alert-{{ message.tags }} alert-dismissible fade show"
+          role="alert"
+        >
+          {{ message }}
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+          ></button>
         </div>
-        {% endif %}
+        {% endfor %}
+      </div>
+      {% endif %}
 
-        <!-- Content -->
-        {% block content %}{% endblock %}
+      <!-- Content -->
+      {% block content %}{% endblock %}
     </main>
 
     <!-- Bootstrap JS -->
@@ -219,86 +274,93 @@
     <!-- DataTables JS -->
     <script src="{% static 'data_collector/js/jquery.dataTables.min.js' %}"></script>
     <script src="{% static 'data_collector/js/dataTables.bootstrap5.min.js' %}"></script>
-    
+
     <script>
-        // DataTables language config
-        var dtLanguage = {
-            "emptyTable": "Không có dữ liệu trong bảng",
-            "info": "Hiển thị từ _START_ đến _END_ của _TOTAL_ mục",
-            "infoEmpty": "Hiển thị 0 đến 0 của 0 mục",
-            "infoFiltered": "(đã lọc từ _MAX_ mục)",
-            "lengthMenu": "Hiển thị _MENU_ mục",
-            "loadingRecords": "Đang tải...",
-            "processing": "Đang xử lý...",
-            "search": "Tìm kiếm:",
-            "zeroRecords": "Không tìm thấy bản ghi nào",
-            "paginate": {
-                "first": "Đầu tiên",
-                "last": "Cuối cùng",
-                "next": "Tiếp theo",
-                "previous": "Trước đó"
-            },
-            "aria": {
-                "sortAscending": ": sắp xếp tăng dần",
-                "sortDescending": ": sắp xếp giảm dần"
-            }
-        };
+      // DataTables language config
+      var dtLanguage = {
+        emptyTable: "Không có dữ liệu trong bảng",
+        info: "Hiển thị từ _START_ đến _END_ của _TOTAL_ mục",
+        infoEmpty: "Hiển thị 0 đến 0 của 0 mục",
+        infoFiltered: "(đã lọc từ _MAX_ mục)",
+        lengthMenu: "Hiển thị _MENU_ mục",
+        loadingRecords: "Đang tải...",
+        processing: "Đang xử lý...",
+        search: "Tìm kiếm:",
+        zeroRecords: "Không tìm thấy bản ghi nào",
+        paginate: {
+          first: "Đầu tiên",
+          last: "Cuối cùng",
+          next: "Tiếp theo",
+          previous: "Trước đó",
+        },
+        aria: {
+          sortAscending: ": sắp xếp tăng dần",
+          sortDescending: ": sắp xếp giảm dần",
+        },
+      };
 
-        // Initialize DataTables
-        $(document).ready(function() {
-            $('.data-table').DataTable({
-                "pageLength": 25,
-                "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
-                "language": dtLanguage,
-                "order": [[1, "desc"]]
-            });
+      // Initialize DataTables only if table exists
+      $(document).ready(function () {
+        if ($(".data-table").length && $(".data-table tbody tr").length) {
+          $(".data-table").DataTable({
+            pageLength: 25,
+            lengthMenu: [
+              [10, 25, 50, 100, -1],
+              [10, 25, 50, 100, "All"],
+            ],
+            language: dtLanguage,
+            order: [[1, "desc"]],
+          });
+        }
+      });
+
+      // CSRF token helper
+      function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+          const cookies = document.cookie.split(";");
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === name + "=") {
+              cookieValue = decodeURIComponent(
+                cookie.substring(name.length + 1),
+              );
+              break;
+            }
+          }
+        }
+        return cookieValue;
+      }
+
+      const csrftoken = getCookie("csrftoken");
+
+      // AJAX helper
+      function ajaxPOST(url, data, callback) {
+        $.ajax({
+          url: url,
+          method: "POST",
+          headers: { "X-CSRFToken": csrftoken },
+          contentType: "application/json",
+          data: JSON.stringify(data),
+          success: callback,
+          error: function (xhr, status, error) {
+            callback({ success: false, error: error });
+          },
         });
+      }
 
-        // CSRF token helper
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-
-        const csrftoken = getCookie('csrftoken');
-
-        // AJAX helper
-        function ajaxPOST(url, data, callback) {
-            $.ajax({
-                url: url,
-                method: 'POST',
-                headers: {'X-CSRFToken': csrftoken},
-                contentType: 'application/json',
-                data: JSON.stringify(data),
-                success: callback,
-                error: function(xhr, status, error) {
-                    callback({success: false, error: error});
-                }
-            });
-        }
-
-        function ajaxGET(url, callback) {
-            $.ajax({
-                url: url,
-                method: 'GET',
-                success: callback,
-                error: function(xhr, status, error) {
-                    callback({success: false, error: error});
-                }
-            });
-        }
+      function ajaxGET(url, callback) {
+        $.ajax({
+          url: url,
+          method: "GET",
+          success: callback,
+          error: function (xhr, status, error) {
+            callback({ success: false, error: error });
+          },
+        });
+      }
     </script>
-    
+
     {% block extra_js %}{% endblock %}
-</body>
+  </body>
 </html>
