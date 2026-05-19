@@ -88,14 +88,14 @@ class ThresholdConfigViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        _system = self.request.query_params.get("system")
-        _level = self.request.query_params.get("level")
+        system = self.request.query_params.get("system")
+        level = self.request.query_params.get("level")
         cycle = self.request.query_params.get("cycle_minutes")
 
-        if _system:
-            queryset = queryset.filter(_system__iexact=_system)
-        if _level:
-            queryset = queryset.filter(_level__iexact=_level)
+        if system:
+            queryset = queryset.filter(system_type__iexact=system)
+        if level:
+            queryset = queryset.filter(threshold_level__iexact=level)
         if cycle:
             if cycle.lower() == "null" or cycle.lower() == "batch":
                 queryset = queryset.filter(cycle_minutes__isnull=True)
@@ -368,7 +368,7 @@ class TestCollectView(DataCollectorBaseView):
         for src in DataSource.objects.all():
             cycle_str = "batch" if src.is_batch() else f"{src.cycle_minutes}min"
             sources.append({
-                "id": src._id,
+                "id": src.pk,
                 "name": f"[{src.system}] {src.vendor} - {src.ip}/{src.data_name} ({cycle_str})",
                 "system": src.system,
                 "vendor": src.vendor,
@@ -388,7 +388,7 @@ class CollectionLogDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["page_title"] = f"Collection Log #{self.object._id}"
+        context["page_title"] = f"Collection Log #{self.object.pk}"
         return context
 
 

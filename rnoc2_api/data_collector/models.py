@@ -107,9 +107,14 @@ class DataSource(models.Model):
 
     class Meta:
         db_table = "data_collector_datasource"
-        ordering = ["-_id"]
+        ordering = ["-pk"]
         verbose_name = "Data Source"
         verbose_name_plural = "Data Sources"
+
+    @property
+    def pk(self):
+        """Property an toàn cho template."""
+        return self._id
 
     def __str__(self):
         cycle_str = f"{self.cycle_minutes}min" if self.cycle_minutes else "batch"
@@ -180,13 +185,15 @@ class ThresholdConfig(models.Model):
         null=True, blank=True,
         help_text="Tên hiển thị cho threshold config"
     )
-    _system = models.CharField(
+    system_type = models.CharField(
         max_length=10, choices=SYSTEM_CHOICES, null=True, blank=True,
-        help_text="Hệ thống (2G/3G/4G/5G/VoLTE)"
+        help_text="Hệ thống (2G/3G/4G/5G/VoLTE)",
+        db_column="_system"
     )
-    _level = models.CharField(
+    threshold_level = models.CharField(
         max_length=50, choices=LEVEL_CHOICES, null=True, blank=True,
-        help_text="Level (BSC/RNC/eNB/gNB/Cell)"
+        help_text="Level (BSC/RNC/eNB/gNB/Cell)",
+        db_column="_level"
     )
 
     # Chu kỳ dữ liệu áp dụng threshold
@@ -206,13 +213,18 @@ class ThresholdConfig(models.Model):
 
     class Meta:
         db_table = "data_collector_threshold_config"
-        ordering = ["-_id"]
+        ordering = ["-pk"]
         verbose_name = "Threshold Config"
         verbose_name_plural = "Threshold Configs"
 
+    @property
+    def pk(self):
+        """Property an toàn cho template."""
+        return self._id
+
     def __str__(self):
         cycle_str = f"{self.cycle_minutes}min" if self.cycle_minutes else "batch"
-        return f"[{self._system}] {self._level} ({cycle_str})"
+        return f"[{self.system_type}] {self.threshold_level} ({cycle_str})"
 
     def is_realtime(self) -> bool:
         """Kiểm tra xem threshold này áp dụng cho realtime không."""
@@ -291,8 +303,13 @@ class CollectionLog(models.Model):
             models.Index(fields=["test_datetime"]),
         ]
 
+    @property
+    def pk(self):
+        """Property an toàn cho template."""
+        return self._id
+
     def __str__(self):
-        return f"Log #{self._id} - {self.source_name} ({self.status})"
+        return f"Log #{self.pk} - {self.source_name} ({self.status})"
 
     def add_step(
         self,

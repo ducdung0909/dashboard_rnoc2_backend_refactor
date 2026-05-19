@@ -33,7 +33,7 @@
                 <tbody>
                     {% for source in sources %}
                     <tr>
-                        <td>{{ source._id }}</td>
+                        <td>{{ source.pk }}</td>
                         <td>
                             {% if source.active %}
                             <span class="badge bg-success">Active</span>
@@ -59,15 +59,15 @@
                         <td>
                             <div class="btn-group btn-group-sm">
                                 <button class="btn btn-outline-primary" 
-                                        onclick="testConnection('source_realtime', {{ source._id }})"
+                                        onclick="testConnection('source_realtime', {{ source.pk }})"
                                         title="Test">
                                     <i class="bi bi-wifi"></i>
                                 </button>
-                                <a href="{% url 'sourcerealtime-edit' source._id %}" 
+                                <a href="{% url 'sourcerealtime-edit' source.pk %}" 
                                    class="btn btn-outline-secondary" title="Edit">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <a href="{% url 'test-collect' %}?source_type=source_realtime&source_id={{ source._id }}" 
+                                <a href="{% url 'test-collect' %}?source_type=source_realtime&source_id={{ source.pk }}" 
                                    class="btn btn-outline-success" title="Test Collect">
                                     <i class="bi bi-play"></i>
                                 </a>

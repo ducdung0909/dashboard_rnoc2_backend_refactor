@@ -54,8 +54,8 @@
                 <tbody>
                     {% for source in sources %}
                     <tr data-cycle="{% if source.cycle_minutes %}{{ source.cycle_minutes }}{% else %}batch{% endif %}">
-                        <td><input type="checkbox" class="row-checkbox" value="{{ source._id }}"></td>
-                        <td>{{ source._id }}</td>
+                        <td><input type="checkbox" class="row-checkbox" value="{{ source.pk }}"></td>
+                        <td>{{ source.pk }}</td>
                         <td>
                             {% if source.active %}
                             <span class="badge bg-success">Active</span>
@@ -82,16 +82,16 @@
                         <td>
                             <div class="btn-group btn-group-sm">
                                 <button class="btn btn-outline-primary btn-sm" 
-                                        onclick="testConnection({{ source._id }})"
+                                        onclick="testConnection({{ source.pk }})"
                                         title="Test Connection">
                                     <i class="bi bi-wifi"></i>
                                 </button>
-                                <a href="{% url 'datasource-edit' source._id %}" 
+                                <a href="{% url 'datasource-edit' source.pk %}" 
                                    class="btn btn-outline-secondary btn-sm" title="Edit">
                                     <i class="bi bi-pencil"></i>
                                 </a>
                                 <button class="btn btn-outline-danger btn-sm" 
-                                        onclick="confirmDelete({{ source._id }})"
+                                        onclick="confirmDelete({{ source.pk }})"
                                         title="Delete">
                                     <i class="bi bi-trash"></i>
                                 </button>

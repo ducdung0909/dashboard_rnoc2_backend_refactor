@@ -219,7 +219,7 @@ class TestCollectService:
             self._add_step(
                 1, "Validate Source", "success",
                 f"Tìm thấy source: {source} ({cycle_info})",
-                {"source_id": source._id, "protocol": source.protocol, "cycle": cycle_info}
+                {"source_id": source.pk, "protocol": source.protocol, "cycle": cycle_info}
             )
 
             # Step 2: Test connection
@@ -242,7 +242,7 @@ class TestCollectService:
                 self._set_success(0, 0)
                 return {
                     "success": True,
-                    "log_id": self.log._id,
+                    "log_id": self.log.pk,
                     "message": "Kết nối thành công nhưng không tìm thấy file",
                     "data": None,
                     "steps": self.log.steps
@@ -274,7 +274,7 @@ class TestCollectService:
             self._set_success(rows_fetched, 0)
             return {
                 "success": True,
-                "log_id": self.log._id,
+                "log_id": self.log.pk,
                 "message": "Test collect thành công",
                 "data": preview,
                 "data_info": {
@@ -290,7 +290,7 @@ class TestCollectService:
             self._set_failed(str(e))
             return {
                 "success": False,
-                "log_id": self.log._id,
+                "log_id": self.log.pk,
                 "message": f"Test collect thất bại: {str(e)}",
                 "error": str(e),
                 "steps": self.log.steps if self.log else []

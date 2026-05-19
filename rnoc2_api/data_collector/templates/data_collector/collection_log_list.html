@@ -31,7 +31,7 @@
                 <tbody>
                     {% for log in page_obj %}
                     <tr>
-                        <td>{{ log._id }}</td>
+                        <td>{{ log.pk }}</td>
                         <td>
                             <small>{{ log.source_name|truncatechars:40 }}</small>
                         </td>
@@ -55,7 +55,7 @@
                             <small>{{ log.execution_time|default:"0" }}s</small>
                         </td>
                         <td>
-                            <a href="{% url 'collection-log-detail' log._id %}" 
+                            <a href="{% url 'collection-log-detail' log.pk %}" 
                                class="btn btn-sm btn-outline-primary">
                                 <i class="bi bi-eye"></i>
                             </a>

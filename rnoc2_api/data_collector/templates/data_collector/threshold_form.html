@@ -26,24 +26,24 @@
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">System</label>
-                    <select name="_system" class="form-select">
+                    <select name="system_type" class="form-select">
                         <option value="">-- Select --</option>
-                        <option value="2G" {% if threshold._system == "2G" %}selected{% endif %}>2G</option>
-                        <option value="3G" {% if threshold._system == "3G" %}selected{% endif %}>3G</option>
-                        <option value="4G" {% if threshold._system == "4G" %}selected{% endif %}>4G</option>
-                        <option value="5G" {% if threshold._system == "5G" %}selected{% endif %}>5G</option>
-                        <option value="VoLTE" {% if threshold._system == "VoLTE" %}selected{% endif %}>VoLTE</option>
+                        <option value="2G" {% if threshold.system_type == "2G" %}selected{% endif %}>2G</option>
+                        <option value="3G" {% if threshold.system_type == "3G" %}selected{% endif %}>3G</option>
+                        <option value="4G" {% if threshold.system_type == "4G" %}selected{% endif %}>4G</option>
+                        <option value="5G" {% if threshold.system_type == "5G" %}selected{% endif %}>5G</option>
+                        <option value="VoLTE" {% if threshold.system_type == "VoLTE" %}selected{% endif %}>VoLTE</option>
                     </select>
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Level</label>
-                    <select name="_level" class="form-select">
+                    <select name="threshold_level" class="form-select">
                         <option value="">-- Select --</option>
-                        <option value="BSC" {% if threshold._level == "BSC" %}selected{% endif %}>BSC</option>
-                        <option value="RNC" {% if threshold._level == "RNC" %}selected{% endif %}>RNC</option>
-                        <option value="eNB" {% if threshold._level == "eNB" %}selected{% endif %}>eNB</option>
-                        <option value="gNB" {% if threshold._level == "gNB" %}selected{% endif %}>gNB</option>
-                        <option value="Cell" {% if threshold._level == "Cell" %}selected{% endif %}>Cell</option>
+                        <option value="BSC" {% if threshold.threshold_level == "BSC" %}selected{% endif %}>BSC</option>
+                        <option value="RNC" {% if threshold.threshold_level == "RNC" %}selected{% endif %}>RNC</option>
+                        <option value="eNB" {% if threshold.threshold_level == "eNB" %}selected{% endif %}>eNB</option>
+                        <option value="gNB" {% if threshold.threshold_level == "gNB" %}selected{% endif %}>gNB</option>
+                        <option value="Cell" {% if threshold.threshold_level == "Cell" %}selected{% endif %}>Cell</option>
                     </select>
                 </div>
             </div>

@@ -35,14 +35,14 @@ def collect_all_sources():
             else:
                 results["failed"] += 1
             results["details"].append({
-                "source_id": source._id,
+                "source_id": source.pk,
                 "source_name": str(source),
                 "result": result
             })
         except Exception as e:
             results["failed"] += 1
             results["details"].append({
-                "source_id": source._id,
+                "source_id": source.pk,
                 "source_name": str(source),
                 "error": str(e)
             })
@@ -58,14 +58,14 @@ def collect_all_sources():
             else:
                 results["failed"] += 1
             results["details"].append({
-                "source_id": source._id,
+                "source_id": source.pk,
                 "source_name": str(source),
                 "result": result
             })
         except Exception as e:
             results["failed"] += 1
             results["details"].append({
-                "source_id": source._id,
+                "source_id": source.pk,
                 "source_name": str(source),
                 "error": str(e)
             })
@@ -99,13 +99,13 @@ def collect_sources_by_system(system: str):
             else:
                 results["failed"] += 1
             results["details"].append({
-                "source_id": source._id,
+                "source_id": source.pk,
                 "result": result
             })
         except Exception as e:
             results["failed"] += 1
             results["details"].append({
-                "source_id": source._id,
+                "source_id": source.pk,
                 "error": str(e)
             })
 
@@ -120,13 +120,13 @@ def collect_sources_by_system(system: str):
             else:
                 results["failed"] += 1
             results["details"].append({
-                "source_id": source._id,
+                "source_id": source.pk,
                 "result": result
             })
         except Exception as e:
             results["failed"] += 1
             results["details"].append({
-                "source_id": source._id,
+                "source_id": source.pk,
                 "error": str(e)
             })
 
@@ -166,13 +166,13 @@ def collect_realtime_sources(cycle_minutes: int = 15):
             else:
                 results["failed"] += 1
             results["details"].append({
-                "source_id": source._id,
+                "source_id": source.pk,
                 "result": result
             })
         except Exception as e:
             results["failed"] += 1
             results["details"].append({
-                "source_id": source._id,
+                "source_id": source.pk,
                 "error": str(e)
             })
 
