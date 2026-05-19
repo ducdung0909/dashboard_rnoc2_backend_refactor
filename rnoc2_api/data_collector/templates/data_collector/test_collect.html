@@ -19,9 +19,10 @@
                         <select id="sourceSelect" class="form-select" required>
                             <option value="">-- Select Source --</option>
                             {% for source in sources %}
-                            <option value="{{ source.type }}:{{ source.id }}"
+                            <option value="{{ source.id }}"
                                     data-system="{{ source.system }}"
-                                    data-vendor="{{ source.vendor }}">
+                                    data-vendor="{{ source.vendor }}"
+                                    data-cycle="{{ source.cycle }}">
                                 {{ source.name }}
                             </option>
                             {% endfor %}
@@ -146,13 +147,14 @@
 document.getElementById('testCollectForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
-    const sourceValue = document.getElementById('sourceSelect').value;
-    if (!sourceValue) {
+    const sourceSelect = document.getElementById('sourceSelect');
+    const sourceId = sourceSelect.value;
+    
+    if (!sourceId) {
         alert('Please select a source');
         return;
     }
     
-    const [sourceType, sourceId] = sourceValue.split(':');
     const testDate = document.getElementById('testDate').value;
     const testHour = document.getElementById('testHour').value;
     
@@ -161,9 +163,8 @@ document.getElementById('testCollectForm').addEventListener('submit', function(e
     document.getElementById('statusText').textContent = 'Running test collect...';
     document.getElementById('runTestBtn').disabled = true;
     
-    // Prepare request data
+    // Prepare request data - chỉ cần source_id
     const data = {
-        source_type: sourceType,
         source_id: parseInt(sourceId),
         test_date: testDate || null,
         test_hour: testHour ? parseInt(testHour) : null
@@ -254,11 +255,10 @@ function renderDataPreview(result) {
     ).join('');
 }
 
-// Check URL params for pre-selection
+// Check URL params for pre-selection (source_id only)
 const params = new URLSearchParams(window.location.search);
-if (params.get('source_type') && params.get('source_id')) {
-    const value = params.get('source_type') + ':' + params.get('source_id');
-    document.getElementById('sourceSelect').value = value;
+if (params.get('source_id')) {
+    document.getElementById('sourceSelect').value = params.get('source_id');
 }
 </script>
 {% endblock %}

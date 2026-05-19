@@ -1,0 +1,46 @@
+{% extends "data_collector/base.html" %}
+
+{% block title %}Delete Threshold - Data Collector{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-danger text-white">
+        <i class="bi bi-exclamation-triangle"></i> Confirm Delete
+    </div>
+    <div class="card-body">
+        <p>Are you sure you want to delete this threshold config?</p>
+        
+        <dl class="row mt-3">
+            <dt class="col-sm-3">Name:</dt>
+            <dd class="col-sm-9">{{ threshold.name|default:"-" }}</dd>
+            
+            <dt class="col-sm-3">System:</dt>
+            <dd class="col-sm-9">{{ threshold._system|default:"-" }}</dd>
+            
+            <dt class="col-sm-3">Level:</dt>
+            <dd class="col-sm-9">{{ threshold._level|default:"-" }}</dd>
+            
+            <dt class="col-sm-3">Cycle:</dt>
+            <dd class="col-sm-9">
+                {% if threshold.cycle_minutes %}
+                    {{ threshold.cycle_minutes }} minutes
+                {% else %}
+                    Batch (60min)
+                {% endif %}
+            </dd>
+        </dl>
+        
+        <form method="post">
+            {% csrf_token %}
+            <div class="mt-4">
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-trash"></i> Delete
+                </button>
+                <a href="{% url 'threshold-list' %}" class="btn btn-secondary">
+                    <i class="bi bi-x-lg"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -16,36 +16,45 @@ from ftplib import FTP
 
 from .models import (
     CollectionLog,
-    Source,
-    SourceRealtime,
-    Threshold,
-    ThresholdRealtime,
+    DataSource,
+    Kpi2g15min,
+    Kpi3g15min,
+    Kpi4g15min,
+    Kpi5g15min,
+    KpiVolte15min,
+    Kpi2g60min,
+    Kpi3g60min,
+    Kpi4g60min,
+    Kpi5g60min,
+    KpiVolte60min,
+    ThresholdConfig,
 )
-from api_data.models import (
-    Kpi2g,
-    Kpi3g,
-    Kpi4g,
-    Kpi5g,
-    KpiVolte,
-    Kpi2gRealtime,
-    Kpi3gRealtime,
-    Kpi4gRealtime,
-    Kpi5gRealtime,
-    KpiVolteRealtime,
-)
+
+# Backward compatibility aliases
+Source = DataSource
+SourceRealtime = DataSource
+Threshold = ThresholdConfig
+ThresholdRealtime = ThresholdConfig
 
 
 class SourceService:
-    """Service xử lý nghiệp vụ cho Source."""
+    """Service xử lý nghiệp vụ cho DataSource."""
 
     @staticmethod
-    def get_source(source_type: str, source_id: int) -> Optional[Source | SourceRealtime]:
-        """Lấy source theo type và id."""
-        if source_type == "source":
-            return Source.objects.filter(_id=source_id).first()
-        elif source_type == "source_realtime":
-            return SourceRealtime.objects.filter(_id=source_id).first()
-        return None
+    def get_source(source_id: int) -> Optional[DataSource]:
+        """Lấy source theo id."""
+        return DataSource.objects.filter(_id=source_id).first()
+
+    @staticmethod
+    def get_sources_by_cycle(cycle_minutes: int = None) -> QuerySet:
+        """
+        Lấy danh sách sources theo chu kỳ.
+        cycle_minutes=None: Batch (60min)
+        cycle_minutes=15/30/60: Realtime
+        """
+        if cycle_minutes is None:
+            return DataSource.objects.filter(cycle_minutes__isnull=True)
+        return DataSource.objects.filter(cycle_minutes=cycle_minutes)
 
     @staticmethod
     def test_sftp_connection(source: Source | SourceRealtime) -> tuple[bool, str, dict]:
@@ -122,11 +131,11 @@ class SourceService:
             return False, f"Lỗi kết nối FTP: {str(e)}", details
 
     @staticmethod
-    def test_connection(source_type: str, source_id: int) -> tuple[bool, str, dict]:
+    def test_connection(source_id: int) -> tuple[bool, str, dict]:
         """Test kết nối cho source."""
-        source = SourceService.get_source(source_type, source_id)
+        source = SourceService.get_source(source_id)
         if not source:
-            return False, f"Source không tồn tại (type={source_type}, id={source_id})", {}
+            return False, f"Source không tồn tại (id={source_id})", {}
 
         protocol = (source.protocol or "SFTP").upper()
         if protocol == "SFTP":
@@ -142,8 +151,7 @@ class TestCollectService:
     Service xử lý test collect với ghi log chi tiết từng bước.
     """
 
-    def __init__(self, source_type: str, source_id: int, test_date: str = None, test_hour: int = None):
-        self.source_type = source_type
+    def __init__(self, source_id: int, test_date: str = None, test_hour: int = None):
         self.source_id = source_id
         self.test_date = test_date
         self.test_hour = test_hour
@@ -152,11 +160,10 @@ class TestCollectService:
 
     def _create_log(self) -> CollectionLog:
         """Tạo collection log record."""
-        source = SourceService.get_source(self.source_type, self.source_id)
+        source = SourceService.get_source(self.source_id)
         source_name = str(source) if source else f"Unknown (id={self.source_id})"
 
         log = CollectionLog.objects.create(
-            source_type=self.source_type,
             source_id=self.source_id,
             source_name=source_name,
             test_date=datetime.strptime(self.test_date, "%Y-%m-%d").date() if self.test_date else None,
@@ -203,22 +210,21 @@ class TestCollectService:
         try:
             # Step 1: Validate source
             self._add_step(1, "Validate Source", "running", "Đang kiểm tra source...")
-            source = SourceService.get_source(self.source_type, self.source_id)
+            source = SourceService.get_source(self.source_id)
 
             if not source:
-                raise Exception(f"Source không tồn tại (type={self.source_type}, id={self.source_id})")
+                raise Exception(f"Source không tồn tại (id={self.source_id})")
 
+            cycle_info = "batch" if source.is_batch() else f"{source.cycle_minutes}min"
             self._add_step(
                 1, "Validate Source", "success",
-                f"Tìm thấy source: {source}",
-                {"source_id": source._id, "protocol": source.protocol}
+                f"Tìm thấy source: {source} ({cycle_info})",
+                {"source_id": source._id, "protocol": source.protocol, "cycle": cycle_info}
             )
 
             # Step 2: Test connection
             self._add_step(2, "Test Connection", "running", "Đang kết nối...")
-            success, msg, conn_details = SourceService.test_connection(
-                self.source_type, self.source_id
-            )
+            success, msg, conn_details = SourceService.test_connection(self.source_id)
 
             if not success:
                 self._add_step(2, "Test Connection", "failed", msg, conn_details)
@@ -537,22 +543,21 @@ class ExportImportService:
 
     # Mapping model_name -> Model class
     MODEL_MAPPING = {
-        "source": Source,
-        "sourcerealtime": SourceRealtime,
-        "threshold": Threshold,
-        "threshold_realtime": ThresholdRealtime,
+        "datasource": DataSource,
+        "thresholdconfig": ThresholdConfig,
         "collection_log": CollectionLog,
-        # KPI models from api_data
-        "kpi2g": Kpi2g,
-        "kpi3g": Kpi3g,
-        "kpi4g": Kpi4g,
-        "kpi5g": Kpi5g,
-        "kpivolte": KpiVolte,
-        "kpi2g_realtime": Kpi2gRealtime,
-        "kpi3g_realtime": Kpi3gRealtime,
-        "kpi4g_realtime": Kpi4gRealtime,
-        "kpi5g_realtime": Kpi5gRealtime,
-        "kpivolte_realtime": KpiVolteRealtime,
+        # KPI models 60min (batch/hourly)
+        "kpi2g_60min": Kpi2g60min,
+        "kpi3g_60min": Kpi3g60min,
+        "kpi4g_60min": Kpi4g60min,
+        "kpi5g_60min": Kpi5g60min,
+        "kpivolte_60min": KpiVolte60min,
+        # KPI models 15min (realtime)
+        "kpi2g_15min": Kpi2g15min,
+        "kpi3g_15min": Kpi3g15min,
+        "kpi4g_15min": Kpi4g15min,
+        "kpi5g_15min": Kpi5g15min,
+        "kpivolte_15min": KpiVolte15min,
     }
 
     @classmethod

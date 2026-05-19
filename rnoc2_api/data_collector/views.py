@@ -1,7 +1,7 @@
 """
 Views cho data_collector app.
 Bao gồm:
-- CRUD API cho Source, SourceRealtime, Threshold, CollectionLog
+- CRUD API cho DataSource, ThresholdConfig, CollectionLog
 - Export/Import API
 - Test Collect API
 - Template-based views cho Bootstrap UI
@@ -31,17 +31,15 @@ from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import CollectionLog, Source, SourceRealtime, Threshold, ThresholdRealtime
+from .models import CollectionLog, DataSource, ThresholdConfig
 from .serializers import (
     CollectionLogCreateSerializer,
     CollectionLogSerializer,
+    DataSourceSerializer,
     ExportRequestSerializer,
     ImportRequestSerializer,
-    SourceRealtimeSerializer,
-    SourceSerializer,
     TestConnectionSerializer,
-    ThresholdRealtimeSerializer,
-    ThresholdSerializer,
+    ThresholdConfigSerializer,
 )
 from .services import ExportImportService, SourceService, TestCollectService
 
@@ -50,41 +48,13 @@ from .services import ExportImportService, SourceService, TestCollectService
 # API Views (REST Framework)
 # =============================================================================
 
-class SourceViewSet(viewsets.ModelViewSet):
+class DataSourceViewSet(viewsets.ModelViewSet):
     """
-    API ViewSet cho Source model.
-    CRUD endpoints: /api/sources/
+    API ViewSet cho DataSource model.
+    CRUD endpoints: /api/datasources/
     """
-    queryset = Source.objects.all()
-    serializer_class = SourceSerializer
-
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        # Filter by query params
-        vendor = self.request.query_params.get("vendor")
-        system = self.request.query_params.get("system")
-        protocol = self.request.query_params.get("protocol")
-        active = self.request.query_params.get("active")
-
-        if vendor:
-            queryset = queryset.filter(vendor__iexact=vendor)
-        if system:
-            queryset = queryset.filter(system__iexact=system)
-        if protocol:
-            queryset = queryset.filter(protocol__iexact=protocol)
-        if active is not None:
-            queryset = queryset.filter(active=active)
-
-        return queryset
-
-
-class SourceRealtimeViewSet(viewsets.ModelViewSet):
-    """
-    API ViewSet cho SourceRealtime model.
-    CRUD endpoints: /api/sources-realtime/
-    """
-    queryset = SourceRealtime.objects.all()
-    serializer_class = SourceRealtimeSerializer
+    queryset = DataSource.objects.all()
+    serializer_class = DataSourceSerializer
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -101,23 +71,38 @@ class SourceRealtimeViewSet(viewsets.ModelViewSet):
         if protocol:
             queryset = queryset.filter(protocol__iexact=protocol)
         if cycle:
-            queryset = queryset.filter(cycle_minutes=int(cycle))
+            if cycle.lower() == "null" or cycle.lower() == "batch":
+                queryset = queryset.filter(cycle_minutes__isnull=True)
+            else:
+                queryset = queryset.filter(cycle_minutes=int(cycle))
         if active is not None:
             queryset = queryset.filter(active=active.lower() == "true")
 
         return queryset
 
 
-class ThresholdViewSet(viewsets.ModelViewSet):
-    """API ViewSet cho Threshold model."""
-    queryset = Threshold.objects.all()
-    serializer_class = ThresholdSerializer
+class ThresholdConfigViewSet(viewsets.ModelViewSet):
+    """API ViewSet cho ThresholdConfig model."""
+    queryset = ThresholdConfig.objects.all()
+    serializer_class = ThresholdConfigSerializer
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        _system = self.request.query_params.get("system")
+        _level = self.request.query_params.get("level")
+        cycle = self.request.query_params.get("cycle_minutes")
 
-class ThresholdRealtimeViewSet(viewsets.ModelViewSet):
-    """API ViewSet cho ThresholdRealtime model."""
-    queryset = ThresholdRealtime.objects.all()
-    serializer_class = ThresholdRealtimeSerializer
+        if _system:
+            queryset = queryset.filter(_system__iexact=_system)
+        if _level:
+            queryset = queryset.filter(_level__iexact=_level)
+        if cycle:
+            if cycle.lower() == "null" or cycle.lower() == "batch":
+                queryset = queryset.filter(cycle_minutes__isnull=True)
+            else:
+                queryset = queryset.filter(cycle_minutes=int(cycle))
+
+        return queryset
 
 
 class CollectionLogViewSet(viewsets.ReadOnlyModelViewSet):
@@ -137,10 +122,8 @@ class TestConnectionAPIView(APIView):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        source_type = serializer.validated_data["source_type"]
         source_id = serializer.validated_data["source_id"]
-
-        success, message, details = SourceService.test_connection(source_type, source_id)
+        success, message, details = SourceService.test_connection(source_id)
 
         return Response({
             "success": success,
@@ -160,20 +143,17 @@ class TestCollectAPIView(APIView):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        source_type = serializer.validated_data["source_type"]
         source_id = serializer.validated_data["source_id"]
         test_date = request.data.get("test_date")
         test_hour = request.data.get("test_hour")
 
         service = TestCollectService(
-            source_type=source_type,
             source_id=source_id,
             test_date=test_date,
             test_hour=test_hour
         )
 
         result = service.execute()
-
         return Response(result)
 
 
@@ -250,47 +230,45 @@ class DataCollectorBaseView(TemplateView):
         return context
 
 
-class SourceListView(DataCollectorBaseView):
-    """Trang danh sách Source."""
-    template_name = "data_collector/source_list.html"
+class DataSourceListView(DataCollectorBaseView):
+    """Trang danh sách DataSource."""
+    template_name = "data_collector/datasource_list.html"
     page_title = "Data Sources"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["sources"] = Source.objects.all()
+        context["sources"] = DataSource.objects.all()
         context["source_count"] = context["sources"].count()
         return context
 
 
-class SourceCreateView(CreateView):
-    """Trang tạo Source mới."""
-    model = Source
-    template_name = "data_collector/source_form.html"
+class DataSourceCreateView(CreateView):
+    """Trang tạo DataSource mới."""
+    model = DataSource
+    template_name = "data_collector/datasource_form.html"
     fields = "__all__"
-    success_url = reverse_lazy("source-list")
+    success_url = reverse_lazy("datasource-list")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["page_title"] = "Add Data Source"
         context["form_action"] = "create"
-        context["source"] = Source()  # Empty source for form
+        context["source"] = DataSource()
         return context
 
 
-class SourceUpdateView(UpdateView):
-    """Trang cập nhật Source."""
-    model = Source
-    template_name = "data_collector/source_form.html"
+class DataSourceUpdateView(UpdateView):
+    """Trang cập nhật DataSource."""
+    model = DataSource
+    template_name = "data_collector/datasource_form.html"
     fields = "__all__"
-    success_url = reverse_lazy("source-list")
+    success_url = reverse_lazy("datasource-list")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["page_title"] = "Edit Data Source"
         context["form_action"] = "update"
-        # Convert JSON field to string for textarea
         if self.object.data_header_name:
-            import json
             context["source"] = self.object
             context["source"].data_header_name_str = json.dumps(self.object.data_header_name, indent=2)
         else:
@@ -299,11 +277,11 @@ class SourceUpdateView(UpdateView):
         return context
 
 
-class SourceDeleteView(DeleteView):
-    """Trang xóa Source."""
-    model = Source
-    template_name = "data_collector/source_confirm_delete.html"
-    success_url = reverse_lazy("source-list")
+class DataSourceDeleteView(DeleteView):
+    """Trang xóa DataSource."""
+    model = DataSource
+    template_name = "data_collector/datasource_confirm_delete.html"
+    success_url = reverse_lazy("datasource-list")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -311,39 +289,39 @@ class SourceDeleteView(DeleteView):
         return context
 
 
-class SourceRealtimeListView(DataCollectorBaseView):
-    """Trang danh sách SourceRealtime."""
-    template_name = "data_collector/sourcerealtime_list.html"
-    page_title = "Realtime Sources"
+class ThresholdConfigListView(DataCollectorBaseView):
+    """Trang danh sách ThresholdConfig."""
+    template_name = "data_collector/threshold_list.html"
+    page_title = "Threshold Configs"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["sources"] = SourceRealtime.objects.all()
-        context["source_count"] = context["sources"].count()
+        context["thresholds"] = ThresholdConfig.objects.all()
+        context["threshold_count"] = context["thresholds"].count()
         return context
 
 
-class SourceRealtimeCreateView(CreateView):
-    """Trang tạo SourceRealtime mới."""
-    model = SourceRealtime
-    template_name = "data_collector/sourcerealtime_form.html"
+class ThresholdConfigCreateView(CreateView):
+    """Trang tạo ThresholdConfig mới."""
+    model = ThresholdConfig
+    template_name = "data_collector/threshold_form.html"
     fields = "__all__"
-    success_url = reverse_lazy("sourcerealtime-list")
+    success_url = reverse_lazy("threshold-list")
 
 
-class SourceRealtimeUpdateView(UpdateView):
-    """Trang cập nhật SourceRealtime."""
-    model = SourceRealtime
-    template_name = "data_collector/sourcerealtime_form.html"
+class ThresholdConfigUpdateView(UpdateView):
+    """Trang cập nhật ThresholdConfig."""
+    model = ThresholdConfig
+    template_name = "data_collector/threshold_form.html"
     fields = "__all__"
-    success_url = reverse_lazy("sourcerealtime-list")
+    success_url = reverse_lazy("threshold-list")
 
 
-class SourceRealtimeDeleteView(DeleteView):
-    """Trang xóa SourceRealtime."""
-    model = SourceRealtime
-    template_name = "data_collector/source_confirm_delete.html"
-    success_url = reverse_lazy("sourcerealtime-list")
+class ThresholdConfigDeleteView(DeleteView):
+    """Trang xóa ThresholdConfig."""
+    model = ThresholdConfig
+    template_name = "data_collector/threshold_confirm_delete.html"
+    success_url = reverse_lazy("threshold-list")
 
 
 class ExportImportView(DataCollectorBaseView):
@@ -354,22 +332,25 @@ class ExportImportView(DataCollectorBaseView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["export_models"] = [
-            ("source", "Data Sources"),
-            ("sourcerealtime", "Realtime Sources"),
-            ("threshold", "Thresholds"),
-            ("threshold_realtime", "Thresholds Realtime"),
+            ("datasource", "Data Sources"),
+            ("thresholdconfig", "Threshold Configs"),
             ("collection_log", "Collection Logs"),
-            ("kpi2g", "KPI 2G"),
-            ("kpi3g", "KPI 3G"),
-            ("kpi4g", "KPI 4G"),
-            ("kpi5g", "KPI 5G"),
-            ("kpivolte", "KPI VoLTE"),
+            # KPI 60min (batch/hourly)
+            ("kpi2g_60min", "KPI 2G 60min"),
+            ("kpi3g_60min", "KPI 3G 60min"),
+            ("kpi4g_60min", "KPI 4G 60min"),
+            ("kpi5g_60min", "KPI 5G 60min"),
+            ("kpivolte_60min", "KPI VoLTE 60min"),
+            # KPI 15min (realtime)
+            ("kpi2g_15min", "KPI 2G 15min"),
+            ("kpi3g_15min", "KPI 3G 15min"),
+            ("kpi4g_15min", "KPI 4G 15min"),
+            ("kpi5g_15min", "KPI 5G 15min"),
+            ("kpivolte_15min", "KPI VoLTE 15min"),
         ]
         context["import_models"] = [
-            ("source", "Data Sources"),
-            ("sourcerealtime", "Realtime Sources"),
-            ("threshold", "Thresholds"),
-            ("threshold_realtime", "Thresholds Realtime"),
+            ("datasource", "Data Sources"),
+            ("thresholdconfig", "Threshold Configs"),
             ("collection_log", "Collection Logs"),
         ]
         return context
@@ -383,24 +364,15 @@ class TestCollectView(DataCollectorBaseView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        # Lấy danh sách sources cho dropdown
         sources = []
-        for src in Source.objects.all():
+        for src in DataSource.objects.all():
+            cycle_str = "batch" if src.is_batch() else f"{src.cycle_minutes}min"
             sources.append({
-                "type": "source",
                 "id": src._id,
-                "name": f"[{src.system}] {src.vendor} - {src.ip}/{src.data_name}",
+                "name": f"[{src.system}] {src.vendor} - {src.ip}/{src.data_name} ({cycle_str})",
                 "system": src.system,
                 "vendor": src.vendor,
-            })
-
-        for src in SourceRealtime.objects.all():
-            sources.append({
-                "type": "source_realtime",
-                "id": src._id,
-                "name": f"[{src.system}] {src.vendor} - {src.ip}/{src.data_name}",
-                "system": src.system,
-                "vendor": src.vendor,
+                "cycle": cycle_str,
             })
 
         context["sources"] = sources
@@ -450,10 +422,8 @@ def test_connection(request):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        source_type = serializer.validated_data["source_type"]
         source_id = serializer.validated_data["source_id"]
-
-        success, message, details = SourceService.test_connection(source_type, source_id)
+        success, message, details = SourceService.test_connection(source_id)
 
         return JsonResponse({
             "success": success,
@@ -471,13 +441,11 @@ def run_test_collect(request):
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    source_type = serializer.validated_data["source_type"]
     source_id = serializer.validated_data["source_id"]
     test_date = request.data.get("test_date")
     test_hour = request.data.get("test_hour")
 
     service = TestCollectService(
-        source_type=source_type,
         source_id=source_id,
         test_date=test_date,
         test_hour=test_hour
@@ -547,3 +515,25 @@ def health_check(request):
         "app": "data_collector",
         "timestamp": timezone.now().isoformat()
     })
+
+
+# =============================================================================
+# Backward compatibility aliases
+# =============================================================================
+
+SourceListView = DataSourceListView
+SourceCreateView = DataSourceCreateView
+SourceUpdateView = DataSourceUpdateView
+SourceDeleteView = DataSourceDeleteView
+SourceRealtimeListView = DataSourceListView
+SourceRealtimeCreateView = DataSourceCreateView
+SourceRealtimeUpdateView = DataSourceUpdateView
+SourceRealtimeDeleteView = DataSourceDeleteView
+ThresholdListView = ThresholdConfigListView
+ThresholdCreateView = ThresholdConfigCreateView
+ThresholdUpdateView = ThresholdConfigUpdateView
+ThresholdDeleteView = ThresholdConfigDeleteView
+ThresholdRealtimeListView = ThresholdConfigListView
+ThresholdRealtimeCreateView = ThresholdConfigCreateView
+ThresholdRealtimeUpdateView = ThresholdConfigUpdateView
+ThresholdRealtimeDeleteView = ThresholdConfigDeleteView

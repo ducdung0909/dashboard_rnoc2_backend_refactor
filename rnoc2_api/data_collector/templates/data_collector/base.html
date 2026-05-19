@@ -146,15 +146,15 @@
         </div>
         <ul class="nav flex-column">
             <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'source-list' %}active{% endif %}" 
-                   href="{% url 'source-list' %}">
+                <a class="nav-link {% if request.resolver_match.url_name == 'datasource-list' or request.resolver_match.url_name == 'source-list' %}active{% endif %}" 
+                   href="{% url 'datasource-list' %}">
                     <i class="bi bi-server"></i> Data Sources
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'sourcerealtime-list' %}active{% endif %}" 
-                   href="{% url 'sourcerealtime-list' %}">
-                    <i class="bi bi-lightning"></i> Realtime Sources
+                <a class="nav-link {% if request.resolver_match.url_name == 'threshold-list' %}active{% endif %}" 
+                   href="{% url 'threshold-list' %}">
+                    <i class="bi bi-sliders"></i> Thresholds
                 </a>
             </li>
             <li class="nav-item">
