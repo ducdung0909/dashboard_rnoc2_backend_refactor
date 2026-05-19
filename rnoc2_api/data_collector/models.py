@@ -353,10 +353,10 @@ class CollectionLog(models.Model):
 class Kpi2g60min(models.Model):
     """Bảng lưu trữ KPI 2G theo chu kỳ 60 phút (batch/hourly)."""
     _id = models.AutoField(primary_key=True)
-    _node_name = models.CharField(max_length=255, default="", null=True, blank=True, db_index=True)
-    _level = models.CharField(max_length=50, null=True, blank=True)
-    _vendor = models.CharField(max_length=50, null=True, blank=True)
-    _sta_datetime = models.DateTimeField(default=datetime.now, blank=True, db_index=True)
+    node_name = models.CharField(max_length=255, default="", null=True, blank=True, db_index=True, db_column="_node_name")
+    kpi_level = models.CharField(max_length=50, null=True, blank=True, db_column="_level")
+    vendor = models.CharField(max_length=50, null=True, blank=True, db_column="_vendor")
+    sta_datetime = models.DateTimeField(default=datetime.now, blank=True, db_index=True, db_column="_sta_datetime")
 
     cs_2g_cssrv1 = models.FloatField(default=0, null=True, blank=True)
     cs_2g_dcr = models.FloatField(default=0, null=True, blank=True)
@@ -368,23 +368,23 @@ class Kpi2g60min(models.Model):
     class Meta:
         db_table = "data_collector_kpi2g_60min"
         indexes = [
-            models.Index(fields=["_node_name", "_sta_datetime"]),
-            models.Index(fields=["_sta_datetime"]),
+            models.Index(fields=["node_name", "sta_datetime"]),
+            models.Index(fields=["sta_datetime"]),
         ]
         verbose_name = "KPI 2G 60min"
         verbose_name_plural = "KPI 2G 60min"
 
     def __str__(self):
-        return f"{self._node_name} @ {self._sta_datetime}"
+        return f"{self.node_name} @ {self.sta_datetime}"
 
 
 class Kpi3g60min(models.Model):
     """Bảng lưu trữ KPI 3G theo chu kỳ 60 phút (batch/hourly)."""
     _id = models.AutoField(primary_key=True)
-    _node_name = models.CharField(max_length=255, default="", null=True, blank=True, db_index=True)
-    _level = models.CharField(max_length=50, null=True, blank=True)
-    _vendor = models.CharField(max_length=50, null=True, blank=True)
-    _sta_datetime = models.DateTimeField(default=datetime.now, blank=True, db_index=True)
+    node_name = models.CharField(max_length=255, default="", null=True, blank=True, db_index=True, db_column="_node_name")
+    kpi_level = models.CharField(max_length=50, null=True, blank=True, db_column="_level")
+    vendor = models.CharField(max_length=50, null=True, blank=True, db_column="_vendor")
+    sta_datetime = models.DateTimeField(default=datetime.now, blank=True, db_index=True, db_column="_sta_datetime")
 
     cs_3g_cssr = models.FloatField(default=0, null=True, blank=True)
     cs_3g_dcr = models.FloatField(default=0, null=True, blank=True)
@@ -402,23 +402,23 @@ class Kpi3g60min(models.Model):
     class Meta:
         db_table = "data_collector_kpi3g_60min"
         indexes = [
-            models.Index(fields=["_node_name", "_sta_datetime"]),
-            models.Index(fields=["_sta_datetime"]),
+            models.Index(fields=["node_name", "sta_datetime"]),
+            models.Index(fields=["sta_datetime"]),
         ]
         verbose_name = "KPI 3G 60min"
         verbose_name_plural = "KPI 3G 60min"
 
     def __str__(self):
-        return f"{self._node_name} @ {self._sta_datetime}"
+        return f"{self.node_name} @ {self.sta_datetime}"
 
 
 class Kpi4g60min(models.Model):
     """Bảng lưu trữ KPI 4G theo chu kỳ 60 phút (batch/hourly)."""
     _id = models.AutoField(primary_key=True)
-    _node_name = models.CharField(max_length=255, default="", null=True, blank=True, db_index=True)
-    _level = models.CharField(max_length=50, null=True, blank=True)
-    _vendor = models.CharField(max_length=50, null=True, blank=True)
-    _sta_datetime = models.DateTimeField(default=datetime.now, blank=True, db_index=True)
+    node_name = models.CharField(max_length=255, default="", null=True, blank=True, db_index=True, db_column="_node_name")
+    kpi_level = models.CharField(max_length=50, null=True, blank=True, db_column="_level")
+    vendor = models.CharField(max_length=50, null=True, blank=True, db_column="_vendor")
+    sta_datetime = models.DateTimeField(default=datetime.now, blank=True, db_index=True, db_column="_sta_datetime")
 
     ps_4g_rrc_csssr = models.FloatField(default=0, null=True, blank=True)
     ps_4g_erab_ssr = models.FloatField(default=0, null=True, blank=True)
@@ -436,23 +436,23 @@ class Kpi4g60min(models.Model):
     class Meta:
         db_table = "data_collector_kpi4g_60min"
         indexes = [
-            models.Index(fields=["_node_name", "_sta_datetime"]),
-            models.Index(fields=["_sta_datetime"]),
+            models.Index(fields=["node_name", "sta_datetime"]),
+            models.Index(fields=["sta_datetime"]),
         ]
         verbose_name = "KPI 4G 60min"
         verbose_name_plural = "KPI 4G 60min"
 
     def __str__(self):
-        return f"{self._node_name} @ {self._sta_datetime}"
+        return f"{self.node_name} @ {self.sta_datetime}"
 
 
 class Kpi5g60min(models.Model):
     """Bảng lưu trữ KPI 5G theo chu kỳ 60 phút (batch/hourly)."""
     _id = models.AutoField(primary_key=True)
-    _node_name = models.CharField(max_length=255, default="", null=True, blank=True, db_index=True)
-    _level = models.CharField(max_length=50, null=True, blank=True)
-    _vendor = models.CharField(max_length=50, null=True, blank=True)
-    _sta_datetime = models.DateTimeField(default=datetime.now, blank=True, db_index=True)
+    node_name = models.CharField(max_length=255, default="", null=True, blank=True, db_index=True, db_column="_node_name")
+    kpi_level = models.CharField(max_length=50, null=True, blank=True, db_column="_level")
+    vendor = models.CharField(max_length=50, null=True, blank=True, db_column="_vendor")
+    sta_datetime = models.DateTimeField(default=datetime.now, blank=True, db_index=True, db_column="_sta_datetime")
 
     fiveg_sgnb_add_ssr = models.FloatField(null=True, blank=True)
     fiveg_sgnb_abn_ssr = models.FloatField(null=True, blank=True)
@@ -463,23 +463,23 @@ class Kpi5g60min(models.Model):
     class Meta:
         db_table = "data_collector_kpi5g_60min"
         indexes = [
-            models.Index(fields=["_node_name", "_sta_datetime"]),
-            models.Index(fields=["_sta_datetime"]),
+            models.Index(fields=["node_name", "sta_datetime"]),
+            models.Index(fields=["sta_datetime"]),
         ]
         verbose_name = "KPI 5G 60min"
         verbose_name_plural = "KPI 5G 60min"
 
     def __str__(self):
-        return f"{self._node_name} @ {self._sta_datetime}"
+        return f"{self.node_name} @ {self.sta_datetime}"
 
 
 class KpiVolte60min(models.Model):
     """Bảng lưu trữ KPI VoLTE theo chu kỳ 60 phút (batch/hourly)."""
     _id = models.AutoField(primary_key=True)
-    _node_name = models.CharField(max_length=255, default="", null=True, blank=True, db_index=True)
-    _level = models.CharField(max_length=50, null=True, blank=True)
-    _vendor = models.CharField(max_length=50, null=True, blank=True)
-    _sta_datetime = models.DateTimeField(default=datetime.now, blank=True, db_index=True)
+    node_name = models.CharField(max_length=255, default="", null=True, blank=True, db_index=True, db_column="_node_name")
+    kpi_level = models.CharField(max_length=50, null=True, blank=True, db_column="_level")
+    vendor = models.CharField(max_length=50, null=True, blank=True, db_column="_vendor")
+    sta_datetime = models.DateTimeField(default=datetime.now, blank=True, db_index=True, db_column="_sta_datetime")
 
     volte_4g_dcr = models.FloatField(default=0, null=True, blank=True)
     volte_4g_erab_ssr = models.FloatField(default=0, null=True, blank=True)
@@ -491,14 +491,14 @@ class KpiVolte60min(models.Model):
     class Meta:
         db_table = "data_collector_kpivolte_60min"
         indexes = [
-            models.Index(fields=["_node_name", "_sta_datetime"]),
-            models.Index(fields=["_sta_datetime"]),
+            models.Index(fields=["node_name", "sta_datetime"]),
+            models.Index(fields=["sta_datetime"]),
         ]
         verbose_name = "KPI VoLTE 60min"
         verbose_name_plural = "KPI VoLTE 60min"
 
     def __str__(self):
-        return f"{self._node_name} @ {self._sta_datetime}"
+        return f"{self.node_name} @ {self.sta_datetime}"
 
 
 # =============================================================================
@@ -509,10 +509,10 @@ class KpiVolte60min(models.Model):
 class Kpi2g15min(models.Model):
     """Bảng lưu trữ KPI 2G theo chu kỳ 15 phút (realtime)."""
     _id = models.AutoField(primary_key=True)
-    _node_name = models.CharField(max_length=255, default="", null=True, blank=True, db_index=True)
-    _level = models.CharField(max_length=50, null=True, blank=True)
-    _vendor = models.CharField(max_length=50, null=True, blank=True)
-    _sta_datetime = models.DateTimeField(default=datetime.now, blank=True, db_index=True)
+    node_name = models.CharField(max_length=255, default="", null=True, blank=True, db_index=True, db_column="_node_name")
+    kpi_level = models.CharField(max_length=50, null=True, blank=True, db_column="_level")
+    vendor = models.CharField(max_length=50, null=True, blank=True, db_column="_vendor")
+    sta_datetime = models.DateTimeField(default=datetime.now, blank=True, db_index=True, db_column="_sta_datetime")
 
     cs_2g_cssrv1 = models.FloatField(default=0, null=True, blank=True)
     cs_2g_dcr = models.FloatField(default=0, null=True, blank=True)
@@ -524,23 +524,23 @@ class Kpi2g15min(models.Model):
     class Meta:
         db_table = "data_collector_kpi2g_15min"
         indexes = [
-            models.Index(fields=["_node_name", "_sta_datetime"]),
-            models.Index(fields=["_sta_datetime"]),
+            models.Index(fields=["node_name", "sta_datetime"]),
+            models.Index(fields=["sta_datetime"]),
         ]
         verbose_name = "KPI 2G 15min"
         verbose_name_plural = "KPI 2G 15min"
 
     def __str__(self):
-        return f"{self._node_name} @ {self._sta_datetime}"
+        return f"{self.node_name} @ {self.sta_datetime}"
 
 
 class Kpi3g15min(models.Model):
     """Bảng lưu trữ KPI 3G theo chu kỳ 15 phút (realtime)."""
     _id = models.AutoField(primary_key=True)
-    _node_name = models.CharField(max_length=255, default="", null=True, blank=True, db_index=True)
-    _level = models.CharField(max_length=50, null=True, blank=True)
-    _vendor = models.CharField(max_length=50, null=True, blank=True)
-    _sta_datetime = models.DateTimeField(default=datetime.now, blank=True, db_index=True)
+    node_name = models.CharField(max_length=255, default="", null=True, blank=True, db_index=True, db_column="_node_name")
+    kpi_level = models.CharField(max_length=50, null=True, blank=True, db_column="_level")
+    vendor = models.CharField(max_length=50, null=True, blank=True, db_column="_vendor")
+    sta_datetime = models.DateTimeField(default=datetime.now, blank=True, db_index=True, db_column="_sta_datetime")
 
     cs_3g_cssr = models.FloatField(default=0, null=True, blank=True)
     cs_3g_dcr = models.FloatField(default=0, null=True, blank=True)
@@ -558,23 +558,23 @@ class Kpi3g15min(models.Model):
     class Meta:
         db_table = "data_collector_kpi3g_15min"
         indexes = [
-            models.Index(fields=["_node_name", "_sta_datetime"]),
-            models.Index(fields=["_sta_datetime"]),
+            models.Index(fields=["node_name", "sta_datetime"]),
+            models.Index(fields=["sta_datetime"]),
         ]
         verbose_name = "KPI 3G 15min"
         verbose_name_plural = "KPI 3G 15min"
 
     def __str__(self):
-        return f"{self._node_name} @ {self._sta_datetime}"
+        return f"{self.node_name} @ {self.sta_datetime}"
 
 
 class Kpi4g15min(models.Model):
     """Bảng lưu trữ KPI 4G theo chu kỳ 15 phút (realtime)."""
     _id = models.AutoField(primary_key=True)
-    _node_name = models.CharField(max_length=255, default="", null=True, blank=True, db_index=True)
-    _level = models.CharField(max_length=50, null=True, blank=True)
-    _vendor = models.CharField(max_length=50, null=True, blank=True)
-    _sta_datetime = models.DateTimeField(default=datetime.now, blank=True, db_index=True)
+    node_name = models.CharField(max_length=255, default="", null=True, blank=True, db_index=True, db_column="_node_name")
+    kpi_level = models.CharField(max_length=50, null=True, blank=True, db_column="_level")
+    vendor = models.CharField(max_length=50, null=True, blank=True, db_column="_vendor")
+    sta_datetime = models.DateTimeField(default=datetime.now, blank=True, db_index=True, db_column="_sta_datetime")
 
     ps_4g_rrc_csssr = models.FloatField(default=0, null=True, blank=True)
     ps_4g_erab_ssr = models.FloatField(default=0, null=True, blank=True)
@@ -592,23 +592,23 @@ class Kpi4g15min(models.Model):
     class Meta:
         db_table = "data_collector_kpi4g_15min"
         indexes = [
-            models.Index(fields=["_node_name", "_sta_datetime"]),
-            models.Index(fields=["_sta_datetime"]),
+            models.Index(fields=["node_name", "sta_datetime"]),
+            models.Index(fields=["sta_datetime"]),
         ]
         verbose_name = "KPI 4G 15min"
         verbose_name_plural = "KPI 4G 15min"
 
     def __str__(self):
-        return f"{self._node_name} @ {self._sta_datetime}"
+        return f"{self.node_name} @ {self.sta_datetime}"
 
 
 class Kpi5g15min(models.Model):
     """Bảng lưu trữ KPI 5G theo chu kỳ 15 phút (realtime)."""
     _id = models.AutoField(primary_key=True)
-    _node_name = models.CharField(max_length=255, default="", null=True, blank=True, db_index=True)
-    _level = models.CharField(max_length=50, null=True, blank=True)
-    _vendor = models.CharField(max_length=50, null=True, blank=True)
-    _sta_datetime = models.DateTimeField(default=datetime.now, blank=True, db_index=True)
+    node_name = models.CharField(max_length=255, default="", null=True, blank=True, db_index=True, db_column="_node_name")
+    kpi_level = models.CharField(max_length=50, null=True, blank=True, db_column="_level")
+    vendor = models.CharField(max_length=50, null=True, blank=True, db_column="_vendor")
+    sta_datetime = models.DateTimeField(default=datetime.now, blank=True, db_index=True, db_column="_sta_datetime")
 
     fiveg_sgnb_add_ssr = models.FloatField(null=True, blank=True)
     fiveg_sgnb_abn_ssr = models.FloatField(null=True, blank=True)
@@ -619,23 +619,23 @@ class Kpi5g15min(models.Model):
     class Meta:
         db_table = "data_collector_kpi5g_15min"
         indexes = [
-            models.Index(fields=["_node_name", "_sta_datetime"]),
-            models.Index(fields=["_sta_datetime"]),
+            models.Index(fields=["node_name", "sta_datetime"]),
+            models.Index(fields=["sta_datetime"]),
         ]
         verbose_name = "KPI 5G 15min"
         verbose_name_plural = "KPI 5G 15min"
 
     def __str__(self):
-        return f"{self._node_name} @ {self._sta_datetime}"
+        return f"{self.node_name} @ {self.sta_datetime}"
 
 
 class KpiVolte15min(models.Model):
     """Bảng lưu trữ KPI VoLTE theo chu kỳ 15 phút (realtime)."""
     _id = models.AutoField(primary_key=True)
-    _node_name = models.CharField(max_length=255, default="", null=True, blank=True, db_index=True)
-    _level = models.CharField(max_length=50, null=True, blank=True)
-    _vendor = models.CharField(max_length=50, null=True, blank=True)
-    _sta_datetime = models.DateTimeField(default=datetime.now, blank=True, db_index=True)
+    node_name = models.CharField(max_length=255, default="", null=True, blank=True, db_index=True, db_column="_node_name")
+    kpi_level = models.CharField(max_length=50, null=True, blank=True, db_column="_level")
+    vendor = models.CharField(max_length=50, null=True, blank=True, db_column="_vendor")
+    sta_datetime = models.DateTimeField(default=datetime.now, blank=True, db_index=True, db_column="_sta_datetime")
 
     volte_4g_dcr = models.FloatField(default=0, null=True, blank=True)
     volte_4g_erab_ssr = models.FloatField(default=0, null=True, blank=True)
@@ -647,14 +647,14 @@ class KpiVolte15min(models.Model):
     class Meta:
         db_table = "data_collector_kpivolte_15min"
         indexes = [
-            models.Index(fields=["_node_name", "_sta_datetime"]),
-            models.Index(fields=["_sta_datetime"]),
+            models.Index(fields=["node_name", "sta_datetime"]),
+            models.Index(fields=["sta_datetime"]),
         ]
         verbose_name = "KPI VoLTE 15min"
         verbose_name_plural = "KPI VoLTE 15min"
 
     def __str__(self):
-        return f"{self._node_name} @ {self._sta_datetime}"
+        return f"{self.node_name} @ {self.sta_datetime}"
 
 
 # =============================================================================
