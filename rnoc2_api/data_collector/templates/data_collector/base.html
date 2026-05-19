@@ -299,10 +299,11 @@
         },
       };
 
-      // Initialize DataTables only if table exists
+      // Initialize DataTables only if table exists and has real data rows
       $(document).ready(function () {
-        if ($(".data-table").length && $(".data-table tbody tr").length) {
-          $(".data-table").DataTable({
+        var $table = $(".data-table");
+        if ($table.length && $table.find("tbody tr:not(.empty-row)").length) {
+          $table.DataTable({
             pageLength: 25,
             lengthMenu: [
               [10, 25, 50, 100, -1],
